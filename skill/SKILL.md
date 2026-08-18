@@ -1,10 +1,20 @@
 ---
 name: second-brain-framework
 description: "可移植、开源的『第二大脑』框架与治理工具集：把 AI agent 从按会话工作的助手升级为跨会话持续成长的大脑 OS。包含五层管理协议通用模板、治理纪律（诚实边界、坐标纪律、实例化守卫、MEA）、机器可读 GIR/CRL schema，以及 scrub/assemble 脱敏打包工具，让你把自己的私人脑安全脱敏后开源。本地优先，数据主权，MIT 许可。"
-version: 0.1.0
+version: 0.1.1
 ---
 
 # 第二大脑（Second Brain）
+
+## 🚀 开始工作（30 秒入口）
+
+本 skill 是「始终在线的工程纪律 OS」，不是按需调用的工具。第一次用，只做三件事：
+
+1. **实例化你的脑**：把本仓库复制到本地，用 `templates/` 建出 `index.md` / `self-model.md` 等状态文件（含具体命令，见 [docs/quickstart.md](../docs/quickstart.md)）。
+2. **装健康检查钩子**：`cp meta/hooks/post-commit .git/hooks/post-commit`，从此每次提交自动跑 `meta/brain_check.py`（六检查项，红黄绿灯）。
+3. **日常启动**：每次有实质工作的会话开场，先输出「启动声明」，结束前跑 `meta/brain_commit.py` 把脑变更提交进 Git。
+
+> 不确定该不该用？看 [docs/FAQ.md](../docs/FAQ.md) 的「什么时候该用 / 不该用」。
 
 ## 这是什么
 
