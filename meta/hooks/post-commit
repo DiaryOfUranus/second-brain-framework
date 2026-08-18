@@ -1,0 +1,23 @@
+#!/bin/sh
+# second-brain post-commit hook — 自动跑脑健康检查
+#
+# 安装：把本文件放到你的脑仓库 .git/hooks/post-commit 并 chmod +x
+#   （Windows Git Bash / WSL / macOS / Linux 通用）
+#
+# 设计纪律：
+#   - 绝不二次 commit（避免 post-commit 递归）：brain_check.py 内部只读 git，
+#     仅把运行状态写到脑仓库内的 .state/（已纳入 .gitignore）。
+#   - 非阻塞：任意步骤失败均 `|| true`，不阻断你的正常提交。
+
+HOOKDIR="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(dirname "$(dirname "$HOOKDIR")")"   # brain/.git/hooks -> brain
+
+# 优先 python3，退回 python
+if command -v python3 >/dev/null 2>&1; then
+  PY=python3
+else
+  PY=python
+fi
+
+# M5: 脑健康检查（红灯记日志不阻塞提交；脚本内部只读 git，绝不二次 commit）
+"$PY" "$REPO/meta/brain_check.py" >> "$REPO/.state/brain-check.log" 2>&1 || true

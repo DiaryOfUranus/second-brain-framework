@@ -1,0 +1,37 @@
+# 第二大脑开源纯净版 .gitignore
+
+# 运行状态（脑仓库内，git 忽略，不污染工作树、不触发递归提交）
+.state/
+brain_check_state.json
+*.state.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 会话级 / 派生 / 暂存（不进版本库）
+sessions/
+tmp/
+inbox/
+code-maps/
+UPGRADES/
+
+# 日志
+*.log
+.export-sb.log
+.brain-check.log
+
+# 构建暂存（zip 打包临时目录）
+.build/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 私钥 / 凭证（任何情况下都不应进库）
+*.key
+*.pem
+.env
+secret*
+credentials*

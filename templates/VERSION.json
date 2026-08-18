@@ -1,0 +1,15 @@
+{
+  "format_version": "1.0",
+  "current_version": "v0.1.0",
+  "current_commit": null,
+  "versions": [
+    {
+      "version": "v0.1.0",
+      "date": "YYYY-MM-DD",
+      "commit": null,
+      "git_backed": false,
+      "from_version": null,
+      "summary": "初始实例化：从开源纯净版模板建立本机第二大脑"
+    }
+  ]
+}

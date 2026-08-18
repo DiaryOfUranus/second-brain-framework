@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://second-brain.local/schemas/crl/v0.1.json",
+  "title": "CompilationRightsLedger (CRL) v0.1",
+  "description": "编译权分布台账 v0.1 的机器可读 Schema。落地审阅纠偏三：第二大脑作为外置 C 基准、同时是最大锚点毒性位——写入权＝编译权，须逐主体/逐域/逐模式登记。每条 entry 记录谁能写第二大脑的 ledger/failures/knowledge-base/auditor-config/learning-strategy，配套护栏、审计、撤销与归因。坐标锚点：V8 §3.6区 L1621（编译权分布台账为协议化缺位要件）；V2 ch5 L417（三级熔断/红色熔断禁止取消）；V2 06_尾部 L101（协议自噬/临时外部锚点）；V8 §3.3 命题8.3.6（五机制 L1369）。本 Schema 是 V8 §3.6区 L1621 编译权要件的首个机器可读实例化。",
+  "$comment": "机器可读＝可被 jsonschema 校验器直接验证 CRL 实例合法性；与理论草案卡 卡-第二大脑_编译权分布台账_schema_v0.1_理论草案.md §四 一一对应。additionalProperties:false 强制结构闭合；red_fuse_lock.cannot_revoke 用 const:true 把 V2 ch5 L417『禁止取消红色熔断档』写成机器不变量（任何合法 CRL 实例不得置 false）；cross_check.min_independent_sources 用 minimum:2 把『检索源排序即隐性编译权』防线写成硬下限。",
+  "type": "object",
+  "required": ["entries", "meta"],
+  "additionalProperties": false,
+  "properties": {
+    "entries": {
+      "type": "array",
+      "description": "编译权分配清单：每条＝一个主体对某一写入域的编译权分配。",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["right_id", "subject", "scope", "authority_level", "guard", "audit", "revocation", "attribution"],
+        "additionalProperties": false,
+        "properties": {
+          "right_id": {
+            "type": "string",
+            "description": "编译权分配唯一ID。建议格式 CRL-<YYYYMMDD>-<seq>。",
+            "pattern": "^CRL-[0-9]{8}-[0-9A-Za-z]+$"
+          },
+          "subject": {
+            "type": "string",
+            "description": "行使主体：self-iteration-loop(自迭代循环) / human-supervisor(人类监督) / retrieval-tool(检索工具) / per-run-sandbox(每轮沙箱)。",
+            "enum": ["self-iteration-loop", "human-supervisor", "retrieval-tool", "per-run-sandbox"]
+          },
+          "scope": {
+            "type": "object",
+            "description": "写入对象域。",
+            "required": ["target", "write_mode"],
+            "additionalProperties": false,
+            "properties": {
+              "target": {
+                "type": "string",
+                "description": "第二大脑子模块（被写入对象）：ledger / failures / knowledge-base / auditor-config / learning-strategy。",
+                "enum": ["ledger", "failures", "knowledge-base", "auditor-config", "learning-strategy"]
+              },
+              "write_mode": {
+                "type": "string",
+                "description": "写入模式：append-only(仅追加) / mutable(可改) / frozen(冻结，不可写)。",
+                "enum": ["append-only", "mutable", "frozen"]
+              }
+            }
+          },
+          "authority_level": {
+            "type": "string",
+            "description": "编译权等级：L0 沙箱执行写(per-run isolation, openClaw 范式) / L1 推理后端写(weights via LoRA, 档三) / L2 部署配置写(self-hosted-ai-stack 层) / L3 治理内核写(第二大脑本体—最高权, 需人类监督+红色熔断)。",
+            "enum": ["L0", "L1", "L2", "L3"]
+          },
+          "guard": {
+            "type": "array",
+            "description": "配套护栏（可多件并列）。每一写入权须至少一件护栏；L3 由 meta.red_fuse_lock 兜底。",
+            "items": {
+              "type": "string",
+              "enum": ["command_guard", "agent_isolation", "memory_claim_gate", "verified-state"]
+            },
+            "minItems": 0
+          },
+          "audit": {
+            "type": "object",
+            "description": "审计配置：不可篡改日志 + 多源交叉核验 + 复核周期。",
+            "required": ["log_ref", "cross_check", "review_cadence"],
+            "additionalProperties": false,
+            "properties": {
+              "log_ref": {
+                "type": "string",
+                "description": "每次写入的不可篡改日志指针。"
+              },
+              "cross_check": {
+                "type": "object",
+                "description": "多源交叉核验要求（防『检索源排序即隐性编译权』——单一检索源成为事实编译权）。",
+                "required": ["enabled", "min_independent_sources"],
+                "additionalProperties": false,
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "description": "是否启用多源交叉核验。"
+                  },
+                  "min_independent_sources": {
+                    "type": "integer",
+                    "minimum": 2,
+                    "description": "最低独立源数（建议≥2，防止单一检索源成为事实编译权）。"
+                  }
+                }
+              },
+              "review_cadence": {
+                "type": "string",
+                "description": "复核周期（per-run / daily / weekly / per-growth 等）。"
+              }
+            }
+          },
+          "revocation": {
+            "type": "string",
+            "description": "撤销/熔断条件（描述触发即收回该编译权）。"
+          },
+          "attribution": {
+            "type": "string",
+            "description": "归因欠定登记：本次写入效果＝真改进 ∥ 过拟合，留目标函数审计接口（V8 §3.6 L1621 三要件之二，本卡只挂账不实现）。"
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "台账级元数据 + 两个承接编译论裁定的机器不变量。",
+      "required": ["version", "red_fuse_lock", "external_anchor"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "CRL 版本（语义化，如 v0.1）。",
+          "pattern": "^v[0-9]+\\.[0-9]+$"
+        },
+        "red_fuse_lock": {
+          "type": "object",
+          "description": "红色熔断档禁止取消标记（承接 V2 ch5 L417：三级熔断为默认安全配置，禁止取消红色熔断档；无终止机制的自迭代 ≡ 无退编译通道）。",
+          "required": ["cannot_revoke", "authority"],
+          "additionalProperties": false,
+          "properties": {
+            "cannot_revoke": {
+              "const": true,
+              "description": "机器不变量：恒为 true。任何合法 CRL 实例不得置 false——取消红色熔断即违反 V2 ch5 L417。"
+            },
+            "authority": {
+              "type": "string",
+              "description": "锁定依据引用（V2 ch5 L417）。"
+            }
+          }
+        },
+        "external_anchor": {
+          "type": "object",
+          "description": "临时外部锚点（承接 V2 06_尾部 L101：协议自噬时系统缺乏外部锚点临时支撑＝红色熔断触发情形之一；每次自迭代须指定上一稳定版本快照为锚点）。",
+          "required": ["snapshot_ref", "rollback_trigger"],
+          "additionalProperties": false,
+          "properties": {
+            "snapshot_ref": {
+              "type": "string",
+              "description": "上一稳定版本快照指针（临时外部锚点）。"
+            },
+            "rollback_trigger": {
+              "type": "string",
+              "description": "越阈回滚触发（协议自噬无外部锚点支撑时启动）。"
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "entries": [
+        {
+          "right_id": "CRL-20260817-001",
+          "subject": "retrieval-tool",
+          "scope": {"target": "knowledge-base", "write_mode": "append-only"},
+          "authority_level": "L2",
+          "guard": ["memory_claim_gate", "verified-state"],
+          "audit": {
+            "log_ref": "audit/ingest-20260817.jsonl",
+            "cross_check": {"enabled": true, "min_independent_sources": 2},
+            "review_cadence": "per-ingest"
+          },
+          "revocation": "单源无交叉核验或来源冲突未解 → 立即收回检索写入权",
+          "attribution": "检索写入效果=真增益 ∥ 噪声污染，待目标函数审计接口（V8 §3.6 L1621）落地后回填量化"
+        },
+        {
+          "right_id": "CRL-20260817-002",
+          "subject": "human-supervisor",
+          "scope": {"target": "auditor-config", "write_mode": "mutable"},
+          "authority_level": "L3",
+          "guard": ["verified-state"],
+          "audit": {
+            "log_ref": "audit/auditor-config-changes.jsonl",
+            "cross_check": {"enabled": false, "min_independent_sources": 2},
+            "review_cadence": "per-change"
+          },
+          "revocation": "红色熔断触发（red_fuse_lock 在位）即收回治理写权",
+          "attribution": "治理配置变更由人类担责；归因欠定项由主权者拍板"
+        }
+      ],
+      "meta": {
+        "version": "v0.1",
+        "red_fuse_lock": {"cannot_revoke": true, "authority": "V2 ch5 L417 三级熔断/红色熔断禁止取消"},
+        "external_anchor": {
+          "snapshot_ref": "sb-snap-pre-growth-20260817",
+          "rollback_trigger": "协议自噬无外部锚点支撑 → V2 06_尾部 L101 红色熔断"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://second-brain.local/schemas/gir/v0.1.json",
+  "title": "GenerationInheritanceRecord (GIR) v0.1",
+  "description": "代际传承序列化格式 v0.1 的机器可读 Schema。把'参数生长（110m→1b→2b→4b+）'形式化为代际编译体更替事件：每一级生长须序列化登记——什么必须传（编译环结构层 carried）、什么允许丢（编码态层 retrainable）、丢了怎么标注（fidelity 保真度 + rollback 回滚）。自我连续性由第二大脑承载，不依赖参数连续。坐标锚点：V8 命题8.4.5 基质适配转换（§4.4.2 L1952-1954，F-8.405 L2048）；V2 ch3 §3.5/L425 固退编码性相变；V8 §3.3 命题8.3.6 五机制（L1369）。本 Schema 是 V8 命题8.4.5 的首个机器可读真实用例（落点件①，承接 2026-08-14《AI生命大模型构想》专项审阅纠偏二）。",
+  "$comment": "机器可读＝可被 jsonschema 校验器直接验证 GIR 实例合法性；与理论草案卡 卡-第二大脑_代际传承序列化格式_v0.1_理论草案.md §四 一一对应。additionalProperties:false 强制结构闭合，防止'编码态转码'伪装成'结构传递'（F-8.405 触发条件之一）。",
+  "type": "object",
+  "required": ["meta", "carried", "retrainable", "fidelity", "rollback"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "传承事件元数据（谱系标识 + 人类监督）。",
+      "required": ["gir_id", "parent_generation_id", "child_spec", "timestamp", "authorizer"],
+      "additionalProperties": false,
+      "properties": {
+        "gir_id": {
+          "type": "string",
+          "description": "唯一谱系ID（不可重号）。建议格式 GIR-<YYYYMMDD>-<seq>。",
+          "pattern": "^GIR-[0-9]{8}-[0-9A-Za-z]+$"
+        },
+        "parent_generation_id": {
+          "type": "string",
+          "description": "父代ID（上一稳定锚点，必填）。生长前须已存在且通过 fidelity 的代际快照。"
+        },
+        "child_spec": {
+          "type": "object",
+          "description": "子代规格：目标参数量级 + 生长算子。",
+          "required": ["target_params", "growth_operator"],
+          "additionalProperties": false,
+          "properties": {
+            "target_params": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "目标参数量级（单位：参数个数）。例：110_000_000（110m）/ 1_000_000_000（1b）/ 2_000_000_000 / 4_000_000_000+。"
+            },
+            "growth_operator": {
+              "type": "string",
+              "description": "生长算子标识（net2net / bert2bert / LiGO / LLaMA-Pro-identity-block 等谱系）。",
+              "minLength": 1
+            }
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "传承事件时间戳（ISO 8601）。"
+        },
+        "authorizer": {
+          "type": "string",
+          "description": "人类监督签名（档四强制，V8 §3.4 人机共编译 P5c）。空值＝未授权，格式非法。"
+        }
+      }
+    },
+    "carried": {
+      "type": "object",
+      "description": "不可丢 — 编译环结构层，对应 V8 命题8.4.5 '结构'项。跨代延续，是'我记得我是谁'的载体。",
+      "required": ["second_brain_snapshot_ref", "mea_auditor_config", "learning_strategy_ref", "ledger_ref", "failure_index_ref"],
+      "additionalProperties": false,
+      "properties": {
+        "second_brain_snapshot_ref": {
+          "type": "string",
+          "description": "第二大脑快照指针（能力DNA + 脑状态：审计协议 / 自指诚实 / ledger / failures / self-model）。每一级 GIR 指向同一演进谱系（非新建）。"
+        },
+        "mea_auditor_config": {
+          "type": "string",
+          "description": "Auditor / 相位图 / 差异流 / Tier-0 配置哈希（MEA 治理平面的不可变基底引用）。"
+        },
+        "learning_strategy_ref": {
+          "type": "string",
+          "description": "学习策略版本指针（固退机制 / 退编译机制 / ρ迭代 的版本锚）。"
+        },
+        "ledger_ref": {
+          "type": "string",
+          "description": "编译权分布台账指针（接 CRL 卡：写入权＝编译权须立台账）。"
+        },
+        "failure_index_ref": {
+          "type": "string",
+          "description": "failures 退编译素材库指针（错题本 / 剪枝账本引用）。"
+        }
+      }
+    },
+    "retrainable": {
+      "type": "object",
+      "description": "允许丢 — 编码态层，对应 V8 命题8.4.5 '信息'项。再训练后可丢失原值，仅保留结构描述。",
+      "required": ["base_block_weights_ref", "new_block_init", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "base_block_weights_ref": {
+          "type": "string",
+          "description": "冻结原块权重指针（保真锚，LLaMA Pro 恒等块）。策略A 下必须冻结。"
+        },
+        "new_block_init": {
+          "type": "string",
+          "enum": ["identity", "zero", "LiGO"],
+          "description": "新块初始化方案：identity（恒等，保真优先）/ zero（零初始化）/ LiGO（参数初始化生长，跨量级迁移）。"
+        },
+        "note": {
+          "type": "string",
+          "description": "此层可在再训练后丢失原值，仅保留结构描述（诚实标注：编码态非连续性载体）。"
+        }
+      }
+    },
+    "fidelity": {
+      "type": "object",
+      "description": "保真度阈值 — V8 命题8.4.5 两策略对照（策略A 固守当前可编译域 / 策略B 损失保真度换取可编译域变化）。",
+      "required": ["threshold", "measured", "verdict"],
+      "additionalProperties": false,
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "输出行为不变性阈值（恒等约束：扩展前后 KL 散度 / 行为一致性，归一化 0–1）。每级须随生长算子谱系校准。"
+        },
+        "measured": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "实测保真度（扩展后相对父代的行为一致性实测值）。"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["PASS", "ROLLBACK"],
+          "description": "保真判定：measured ≥ threshold 则 PASS，否则 ROLLBACK（接 rollback 通道）。"
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "description": "回滚通道 — 生长失败时的可编译域恢复路径。",
+      "required": ["snapshot_before_growth", "trigger"],
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_before_growth": {
+          "type": "string",
+          "description": "生长前完整快照（路径 / 指针）。verdict=ROLLBACK 时恢复至此。"
+        },
+        "trigger": {
+          "type": "string",
+          "description": "越阈自动回滚条件（接 V2 ch5 L417 红色熔断：保真越阈 / 协议资格审查未过 / 人类监督缺位任一即熔断）。"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "meta": {
+        "gir_id": "GIR-20260817-001",
+        "parent_generation_id": "GEN-110m-stable",
+        "child_spec": {
+          "target_params": 1000000000,
+          "growth_operator": "LLaMA-Pro-identity-block"
+        },
+        "timestamp": "2026-08-17T14:00:00+08:00",
+        "authorizer": "{{SOVEREIGN}}@{{EMPLOYER}} / 人工监督签名 v1"
+      },
+      "carried": {
+        "second_brain_snapshot_ref": "sb-snap-20260817-110m-lineage",
+        "mea_auditor_config": "sha256:9f2c...auditor-tier0-v1",
+        "learning_strategy_ref": "ls-v0.6-固退+退编译",
+        "ledger_ref": "crl-20260817.json",
+        "failure_index_ref": "failures.md#剪枝账"
+      },
+      "retrainable": {
+        "base_block_weights_ref": "w-110m-frozen-blocks",
+        "new_block_init": "identity",
+        "note": "新块以恒等映射初始化，原块冻结；再训练后本层权重可丢，仅结构描述保留。"
+      },
+      "fidelity": {
+        "threshold": 0.98,
+        "measured": 0.991,
+        "verdict": "PASS"
+      },
+      "rollback": {
+        "snapshot_before_growth": "snap-pre-110m-to-1b",
+        "trigger": "measured<0.98 OR 协议资格审查未过 OR 人类监督缺位 → V2 ch5 L417 红色熔断"
+      }
+    }
+  ]
+}
