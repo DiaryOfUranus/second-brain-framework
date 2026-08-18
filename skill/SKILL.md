@@ -1,7 +1,7 @@
 ---
 name: second-brain-framework
 description: "可移植、开源的『第二大脑』框架与治理工具集：把 AI agent 从按会话工作的助手升级为跨会话持续成长的大脑 OS。包含五层管理协议通用模板、治理纪律（诚实边界、坐标纪律、实例化守卫、MEA）、机器可读 GIR/CRL schema，以及 scrub/assemble 脱敏打包工具，让你把自己的私人脑安全脱敏后开源。本地优先，数据主权，MIT 许可。"
-version: 0.2.2
+version: 0.2.3
 ---
 
 # 第二大脑（Second Brain）
@@ -128,12 +128,22 @@ version: 0.2.2
 - **`tools/common.py`** — 统一错误模板 `human_err()`：所有脚本/钩子的失败分支输出「❌ 人话问题 / 🔧 原因 / ▶️ 下一步命令」，新手照做即可，不抛堆栈。
 - 约定：凡脚本失败，先说"发生了什么"（人话），再说"为什么"，最后给"直接复制就能跑的命令"。详见 [references/implementation-notes.md](references/implementation-notes.md)。
 
+## 干净交换包安全导出（T 信任度，v0.2.3 新增）
+
+`meta/export_second_brain.py` 生成用于交换/上传的"干净包"时，默认排除会话级与本地敏感内容，且 MANIFEST 诚实标注：
+
+- **强制排除**：`sessions/`（会话日志）、`audits/`（审计日志）、`tmp/`、`inbox/`、`code-maps/`、`logs/`、`self-model.md`、`.git`、`*.pyc`。
+- **动态 honesty**：`MANIFEST.contains_local_config` 不再硬编码 `false`，而是按实际导出内容判定——若包里仍含敏感路径或扫描到 token/PAT/密钥残留，自动标 `true`。
+- **自检**：`python meta/export_second_brain.py --dry-run` 可预览包含/排除清单；`--audit` 在导出后打印审计报告与判定依据。
+
+这保证 README 里"不含 sessions/、私人身份"的承诺与代码行为一致，避免跨主体共享时"声称干净、实际夹带敏感内容"。
+
 ## 诚实边界（重要）
 
 本开源包是**框架通用模板 + 可移植脚本**，刻意不含以下私有资产：
 
 - **思考基座原文**（`references/base-编译论.md` / `base-共振理论.md` / `base-文明秩序演进理论.md`）为私有资产，**未随本包**。本包内的 `references/second-brain.md` 描述其结构与纪律，但原文快照与坐标以你本地脑为准。
-- **脑状态文件**（`index.md` / `self-model.md` / `ledger` / `failures` / `sessions` 等）属于你个人，须用 `tools/assemble.py --check-only` 脱敏后再分享。
+- **`sessions/`、`audits/`、`self-model.md` 等会话级/含私人身份的内容**已由 `meta/export_second_brain.py` 自动排除；其余脑状态文件（`index.md` / `ledger.md` / `failures.md` 等）属于你个人，分享前仍建议用 `tools/assemble.py --check-only` 复核脱敏，并用 `meta/export_second_brain.py --dry-run` 预览干净包内容。
 - 部分脚本在私有脑中为"纪律级（AI 主动调用）"，OS 级自动前置接线依赖平台支持——详见 implementation-notes.md。
 
 ## 与已有 Skill 的关系

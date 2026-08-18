@@ -108,3 +108,45 @@
 | 脱敏残留 | `scrub --check` | 给下一步命令 |
 
 设计纪律：只读检测绝不改文件；`--fix` 只做可逆/安全补全；涉及远程或重写历史的操作一律给命令配方 + 提醒，不自动执行（fail-closed）。
+
+## 干净交换包安全导出规范（T 信任度，v0.2.3 新增）
+
+> 针对 SkillHub v0.2.2 评估中 T 信任度/安全性扫描的扣分点：干净交换包实际夹带 `sessions/` 会话日志、`self-model.md` 等敏感内容，且 `MANIFEST.contains_local_config` 无条件硬编码为 `false`，与 README "刻意剥离私人身份、会话转录" 的承诺不一致。
+
+### 强制排除清单（export_second_brain.py）
+
+`meta/export_second_brain.py` 复制脑内容到交换包时，以下路径/文件**必须排除**：
+
+| 类别 | 排除项 | 理由 |
+|---|---|---|
+| 会话级 | `sessions/` | 会话日志，含完整对话转录 |
+| 审计级 | `audits/` | 本地运行态审计日志 |
+| 本地敏感 | `self-model.md` | 含私人身份、能力剖面、本地配置 |
+| 派生/临时 | `tmp/`、`inbox/`、`code-maps/`、`logs/` | 临时、派生、未审内容 |
+| 版本控制 | `.git/` | 仓库元数据，可能含远程 URL/凭证历史 |
+| 缓存 | `__pycache__/`、`.state/`、`*.pyc` | 派生缓存 |
+
+### MANIFEST 诚实标注
+
+`MANIFEST.json["contains_local_config"]` 不再硬编码，而是按实际导出产物动态判定为 `true` 的条件：
+
+1. 包内仍含 `sessions/`、`audits/`、`self-model.md` 等敏感路径（防线，理论上已被排除）；
+2. 任意文件前 8KB 扫描到常见 token/PAT/密钥 模式（GitHub PAT、`sk-...` API key、显式 `api_key`/`secret`/`token`/`password` 赋值等）。
+
+判定为 `false` 仅当以上均未触发。**宁可误报，也不漏标。**
+
+### 用户自检入口
+
+```bash
+# 预览包含/排除清单与 contains_local_config 预判
+python meta/export_second_brain.py --dry-run
+
+# 实际导出并打印审计报告
+python meta/export_second_brain.py --audit
+```
+
+### 设计纪律
+
+- **文档与代码必须一致**：README 宣称"不含 sessions/、私人身份"，则 `export_second_brain.py` 必须强制排除，不能依赖用户手动脱敏。
+- **声明必须可验证**：`contains_local_config` 是接收方判断包是否"干净"的唯一机器可读信号，必须诚实，禁止无条件写 `false`。
+- **fail-open 给安全**：token 扫描保守启发式，可能把讨论"token 机制"但无真实凭证的笔记误判为 `true`；用户可手动复核 MANIFEST 与审计报告，但框架不能替用户擅自标 `false`。
