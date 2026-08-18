@@ -1,7 +1,7 @@
 ---
 name: second-brain-framework
 description: "可移植、开源的『第二大脑』框架与治理工具集：把 AI agent 从按会话工作的助手升级为跨会话持续成长的大脑 OS。包含五层管理协议通用模板、治理纪律（诚实边界、坐标纪律、实例化守卫、MEA）、机器可读 GIR/CRL schema，以及 scrub/assemble 脱敏打包工具，让你把自己的私人脑安全脱敏后开源。本地优先，数据主权，MIT 许可。"
-version: 0.2.1
+version: 0.2.2
 ---
 
 # 第二大脑（Second Brain）
@@ -27,6 +27,8 @@ version: 0.2.1
 3. **日常启动**：每次有实质工作的会话开场，先输出「启动声明」，结束前跑 `meta/brain_commit.py` 把脑变更提交进 Git。
 
 > 不确定该不该用？看 [docs/FAQ.md](../docs/FAQ.md) 的「什么时候该用 / 不该用」。
+
+> **遇到问题先跑诊断**：任何环境/仓库异常（`.git` 丢了、钩子没装、链接断了、脱敏残留、连不上 GitHub），先跑 `python tools/doctor.py`（只读诊断），加 `--fix` 自动处理安全补全项。每条问题都给「人话 + 下一步命令」，不用猜。
 
 ## 这是什么
 
@@ -117,6 +119,14 @@ version: 0.2.1
 ## 改造落地件与互鉴工程（详见 [references/implementation-notes.md](references/implementation-notes.md)）
 
 `meta/` 工具集（`declaration_gate` / `command_guard`+`run_guarded` / `session_extract` / `second_opinion` / `brain_commit` / `code_map` 等，均 stdlib-only、可运行）与从平行实例互鉴回补的工程件（`skill_audit` / `distill_to_skill` / `irreversible_guard` / `efficiency_ledger` / `prose_deslop_guard` 等），以及五条互鉴纪律（Continual Harness / 可组合分量 / Loop Engineering / openClaw / WorkBuddy 原生），完整说明与诚实边界在该手册。
+
+## 故障自愈与友好报错（R 可靠性工程件）
+
+框架把"运行稳定性"和"异常处理"做成可自检、可自愈的工程件，而非靠文档承诺：
+
+- **`tools/doctor.py`** — 环境诊断 + 故障自愈：检测 Python 环境、Git 完整性、远程连通性、脑状态文件、健康检查钩子、SKILL.md 引用链接、脱敏残留，输出红/黄/绿灯报告；`--fix` 自动补全安全项（建缺失文件、装钩子），涉及远程/重写的操作只给「命令配方 + 提醒」、不自动跑。
+- **`tools/common.py`** — 统一错误模板 `human_err()`：所有脚本/钩子的失败分支输出「❌ 人话问题 / 🔧 原因 / ▶️ 下一步命令」，新手照做即可，不抛堆栈。
+- 约定：凡脚本失败，先说"发生了什么"（人话），再说"为什么"，最后给"直接复制就能跑的命令"。详见 [references/implementation-notes.md](references/implementation-notes.md)。
 
 ## 诚实边界（重要）
 

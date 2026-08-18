@@ -33,6 +33,7 @@ import datetime
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from scrub import scrub_file, scrub_tree, check_tree  # noqa: E402
+from common import human_err  # noqa: E402
 
 SRC_BRAIN = os.environ.get("SB_SOURCE_BRAIN") or os.path.expanduser("~/.workbuddy/brain")
 SRC_SKILL = os.environ.get("SB_SOURCE_SKILL") or os.path.expanduser("~/.workbuddy/skills/second-brain")
@@ -121,7 +122,9 @@ def git_init_commit():
     if r.returncode == 0:
         print(f"[git] 已提交：{msg}")
     else:
-        print(f"[git] 提交失败：{r.stderr}")
+        human_err("git 初始提交失败", "多为网络/凭据问题（github.com:443 间歇性不可达，或本地无凭据）",
+                  "确认网络后重试；或手动：cd <仓库根> && git add -A && git commit -m \"...\"",
+                  "写操作也可走 API 通道（见 references/implementation-notes.md）")
 
 
 def main():
@@ -135,8 +138,9 @@ def main():
         if not hits:
             print("[check] 未发现残留私人标识 ✓")
             return 0
-        for tok, files in hits.items():
-            print(f"[check] 残留「{tok}」: {files[:10]}")
+        human_err("脱敏未清零，不能公开", "SCRUB_MAP 没覆盖到新出现的私人标识",
+                  "python tools/assemble.py --check-only   # 看完整残留列表",
+                  "把上面列出的新标识加入 tools/scrub.py 的 SCRUB_MAP 后重跑")
         return 1
 
     print(f"源·脑：{SRC_BRAIN}")
@@ -154,10 +158,9 @@ def main():
     # 跳过 tools/（脱敏工具自身的定义文件会"点名"这些 token，属正常工作内容，非泄露）
     hits = check_tree(OUT, exclude_dirs={"tools", ".git", ".build"})
     if hits:
-        print("[check] ⚠ 发现残留私人标识：")
-        for tok, files in hits.items():
-            print(f"  「{tok}」: {files[:10]}")
-        print("请检查 SCRUB_MAP 后重跑；未清零前不要公开。")
+        human_err("构建中止：脱敏未清零", "SCRUB_MAP 没覆盖到新出现的私人标识",
+                  "python tools/assemble.py --check-only   # 看完整残留列表",
+                  "把上面列出的新标识加入 tools/scrub.py 的 SCRUB_MAP 后重跑")
         return 1
     print("[check] ✓ 无残留私人标识")
 
