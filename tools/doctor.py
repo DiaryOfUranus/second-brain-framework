@@ -44,6 +44,33 @@ MIN_PY = (3, 8)
 # 脑状态文件 → 对应模板（templates/ 下）
 BRAIN_STATE_FILES = ["index.md", "ledger.md", "VERSION.json"]
 
+# 健康检查钩子内容（内嵌，避免依赖包内 meta/hooks/post-commit 是否随包分发；
+# 发布表单会剔除无扩展名/git hook 文件，故 --fix 直接写出此内容，对所有来源一致可用）
+HOOK_CONTENT = r"""#!/bin/sh
+# second-brain post-commit hook — 自动跑脑健康检查
+#
+# 安装：把本文件放到你的脑仓库 .git/hooks/post-commit 并 chmod +x
+#   （Windows Git Bash / WSL / macOS / Linux 通用）
+#
+# 设计纪律：
+#   - 绝不二次 commit（避免 post-commit 递归）：brain_check.py 内部只读 git，
+#     仅把运行状态写到脑仓库内的 .state/（已纳入 .gitignore）。
+#   - 非阻塞：任意步骤失败均 `|| true`，不阻断你的正常提交。
+
+HOOKDIR="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(dirname "$(dirname "$HOOKDIR")")"   # brain/.git/hooks -> brain
+
+# 优先 python3，退回 python
+if command -v python3 >/dev/null 2>&1; then
+  PY=python3
+else
+  PY=python
+fi
+
+# M5: 脑健康检查（红灯记日志不阻塞提交；脚本内部只读 git，绝不二次 commit）
+"$PY" "$REPO/meta/brain_check.py" >> "$REPO/.state/brain-check.log" 2>&1 || true
+"""
+
 
 def _norm(path):
     return os.path.normpath(path)
@@ -135,22 +162,22 @@ def check_hook(results, do_fix):
     if os.path.exists(hook):
         results.append(("ok", "健康检查钩子", ".git/hooks/post-commit 已安装"))
         return
-    src = os.path.join(REPO, "meta", "hooks", "post-commit")
-    if do_fix and os.path.isfile(src):
+    if do_fix:
         try:
             os.makedirs(os.path.dirname(hook), exist_ok=True)
-            import shutil
-            shutil.copy(src, hook)
+            with open(hook, "w", encoding="utf-8") as f:
+                f.write(HOOK_CONTENT)
             try:
                 os.chmod(hook, 0o755)
             except Exception:
                 pass
-            results.append(("fix", "安装钩子", "已装 .git/hooks/post-commit（每次提交自动跑脑健康检查）✓"))
+            results.append(("fix", "安装钩子",
+                            "已装 .git/hooks/post-commit（每次提交自动跑脑健康检查）✓"))
         except Exception as e:
-            results.append(("red", "安装钩子", f"复制失败：{e}"))
+            results.append(("red", "安装钩子", f"写入失败：{e}"))
     else:
         results.append(("yellow", "健康检查钩子",
-                        "未安装；建议：cp meta/hooks/post-commit .git/hooks/post-commit"))
+                        "未安装；运行 `python tools/doctor.py --fix` 可一键安装"))
 
 
 def check_skill_links(results):
