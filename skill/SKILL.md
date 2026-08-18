@@ -1,7 +1,7 @@
 ---
 name: second-brain-framework
 description: "可移植、开源的『第二大脑』框架与治理工具集：把 AI agent 从按会话工作的助手升级为跨会话持续成长的大脑 OS。包含五层管理协议通用模板、治理纪律（诚实边界、坐标纪律、实例化守卫、MEA）、机器可读 GIR/CRL schema，以及 scrub/assemble 脱敏打包工具，让你把自己的私人脑安全脱敏后开源。本地优先，数据主权，MIT 许可。"
-version: 0.2.3
+version: 0.2.4
 ---
 
 # 第二大脑（Second Brain）
@@ -137,6 +137,15 @@ version: 0.2.3
 - **自检**：`python meta/export_second_brain.py --dry-run` 可预览包含/排除清单；`--audit` 在导出后打印审计报告与判定依据。
 
 这保证 README 里"不含 sessions/、私人身份"的承诺与代码行为一致，避免跨主体共享时"声称干净、实际夹带敏感内容"。
+
+## 框架根与脑根隔离（安装铁律，v0.2.4 加固）
+
+升级框架版本**不会**覆盖你的本地记忆，前提是遵守这条铁律：
+
+- **记忆永远在独立脑根**：你的持久记忆位于 `~/.workbuddy/brain/`（可用 `SB_BRAIN` 环境变量或 `doctor.py --brain-root` 覆盖），与框架发布源**物理隔离**——框架目录只是程序与模板，不含你的数据。
+- **框架更新只动框架根**：`git pull` / 重新解压 SkillHub 包 / 覆盖安装 skill，只会更新框架目录（`SKILL.md` / `tools/` / `templates/` 等），**碰不到脑根**。
+- **绝不要把记忆放进框架目录**：不要把自己的 `index.md` / `ledger.md` / `self-model.md` / `sessions/` 放到框架仓库根；否则"删旧仓库 + 暴力解压覆盖"会丢。
+- **`doctor.py --fix` 只写脑根**：补全脑状态文件、安装健康检查钩子都只落到脑根，绝不反向写框架目录（框架根保持只读模板）。
 
 ## 诚实边界（重要）
 

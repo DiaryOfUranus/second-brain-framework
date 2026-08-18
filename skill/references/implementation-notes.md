@@ -150,3 +150,30 @@ python meta/export_second_brain.py --audit
 - **文档与代码必须一致**：README 宣称"不含 sessions/、私人身份"，则 `export_second_brain.py` 必须强制排除，不能依赖用户手动脱敏。
 - **声明必须可验证**：`contains_local_config` 是接收方判断包是否"干净"的唯一机器可读信号，必须诚实，禁止无条件写 `false`。
 - **fail-open 给安全**：token 扫描保守启发式，可能把讨论"token 机制"但无真实凭证的笔记误判为 `true`；用户可手动复核 MANIFEST 与审计报告，但框架不能替用户擅自标 `false`。
+
+## 框架根与脑根隔离（v0.2.4 加固，B 线）
+
+> 回应"升级后续版本是否覆盖用户本地记忆"的担忧：把"框架根（程序/模板发布源）"与"脑根（用户记忆）"在代码层面彻底分离，杜绝框架更新/自检误写记忆。
+
+### 隔离模型
+
+| 项 | 框架根 `REPO` | 脑根 `BRAIN_ROOT` |
+|---|---|---|
+| 含义 | 脚本所在目录上级，发布源 / skill 目录 | 用户持久记忆目录 |
+| 默认 | `tools/` 上级 | `~/.workbuddy/brain/`（或 `SB_BRAIN`、`--brain-root`） |
+| 含什么 | `SKILL.md` / `tools/` / `templates/` / `meta/` 等 | `index.md`、`ledger.md`、`VERSION.json`、`self-model.md`、`sessions/` 等 |
+| 谁碰它 | 框架版本更新（git pull / 解压覆盖） | 大脑的 git 提交、自检补全、钩子 |
+
+### `doctor.py` 改造要点
+
+- 新增 `BRAIN_ROOT` 常量 + `--brain-root` 参数；`check_git_integrity` / `check_brain_state` / `check_hook` 全部改为以 `brain_root` 为目标。
+- `check_brain_state --fix`：从 `REPO/templates/` 复制脑状态文件到 **`BRAIN_ROOT/`**（不再是 `REPO/`）。
+- `check_hook --fix`：钩子安装到 **`BRAIN_ROOT/.git/hooks/post-commit`**（不再是 `REPO/.git/hooks`）。
+- `print_report` 输出框架根与脑根路径，让用户一眼看清两者分离。
+- 自检结论：隔离实测——`--fix --brain-root <隔离目录>` 正确生成脑状态文件与钩子到该目录，框架根保持零污染。
+
+### 安装铁律（写入 SKILL.md）
+
+- 记忆永远在独立脑根，框架更新只动框架根，碰不到脑根。
+- 绝不要把记忆文件放进框架仓库根（防"暴力解压覆盖"丢失）。
+- `doctor.py --fix` 只写脑根，绝不反向写框架目录。
