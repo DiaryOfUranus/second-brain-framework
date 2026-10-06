@@ -84,7 +84,7 @@ python meta/brain_check.py
 
 ## 下一步
 
-- 想系统了解五层协议与治理纪律 → 读 `skill/SKILL.md`（较长，按需下潜）
+- 想系统了解五层协议与治理纪律 → 读 `second-brain-framework/SKILL.md`（较长，按需下潜）
 - 想把自己的脑**安全脱敏后开源/分享** → 看 `tools/scrub.py` + `tools/assemble.py`，先跑 `python tools/assemble.py --check-only` 自检有无残留私人标识
 - 想导出给别的工具用 → `python meta/export_second_brain.py`
 - 常见问题与踩坑 → [docs/FAQ.md](FAQ.md)

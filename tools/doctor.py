@@ -199,7 +199,7 @@ def check_hook(results, do_fix, brain_root):
 
 
 def check_skill_links(results):
-    skill_md = os.path.join(REPO, "skill", "SKILL.md")
+    skill_md = os.path.join(REPO, "second-brain-framework", "SKILL.md")
     if not os.path.exists(skill_md):
         return  # 非框架/技能仓库，跳过
     base = os.path.dirname(skill_md)

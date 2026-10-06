@@ -36,7 +36,7 @@
 |---|---|
 | `meta/` | 治理脚本：脑健康检查、脱脑演练、自动提交、升级包、导出（全部可移植，路径环境变量化） |
 | `schemas/` | 两个机器可读 schema：**GIR 代际传承格式** 与 **CRL 编译权分布台账**（Draft 2020-12，jsonschema 可强制校验） |
-| `skill/` | 第二大脑方法论本体（SKILL.md + references + 15 个可复用子技能，如 command-guard、coordinate-discipline 等） |
+| `second-brain-framework/` | 第二大脑方法论本体（SKILL.md + references + 15 个可复用子技能，如 command-guard、coordinate-discipline 等） |
 | `templates/` | 通用脑文件模板（self-model / index / ledger / MEMORY / failures / VERSION / CHANGELOG / base 理论骨架） |
 | `docs/positioning.md` | 定位白皮书：第二大脑 vs 开源同类（PKM/RAG/Agent 记忆层）的品类划分与差异化 |
 | `tools/` | 可复用脱敏工具 `scrub.py` 与 `assemble.py`（把你自己的私人脑导出为干净副本） |

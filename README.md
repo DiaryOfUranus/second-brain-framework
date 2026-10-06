@@ -34,7 +34,7 @@ This repo ships the **reusable framework**:
 |---|---|
 | `meta/` | Governance scripts: brain health check, offline drill, auto-commit, upgrade pack, export (all portable, env-var parameterized) |
 | `schemas/` | Two machine-readable schemas: **GIR** (generational inheritance format) and **CRL** (compilation-rights ledger), Draft 2020-12, jsonschema-enforceable |
-| `skill/` | The methodology body (SKILL.md + references + 15 reusable sub-skills, e.g. command-guard, coordinate-discipline) |
+| `second-brain-framework/` | The methodology body (SKILL.md + references + 15 reusable sub-skills, e.g. command-guard, coordinate-discipline) |
 | `templates/` | Generic brain-file templates (self-model / index / ledger / MEMORY / failures / VERSION / CHANGELOG / base theory skeleton) |
 | `docs/` | Quickstart, FAQ, positioning whitepaper (vs PKM/RAG/Agent memory) |
 | `tools/` | Reusable sanitization tools `scrub.py` & `assemble.py` (export your private brain as a clean copy) |

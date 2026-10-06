@@ -1,7 +1,25 @@
 ---
 name: second-brain-framework
-description: "可移植、开源的『第二大脑』框架与治理工具集：把 AI agent 从按会话工作的助手升级为跨会话持续成长的大脑 OS。包含五层管理协议通用模板、治理纪律（诚实边界、坐标纪律、实例化守卫、MEA）、机器可读 GIR/CRL schema，以及 scrub/assemble 脱敏打包工具，让你把自己的私人脑安全脱敏后开源。本地优先，数据主权，MIT 许可。"
-version: 0.3.0
+description: >
+  Portable open-source Second Brain framework and agent skill. Gives an AI agent
+  persistent cross-session memory plus engineering discipline: a five-layer management
+  protocol, honesty boundary, coordinate discipline, instantiation guard, MEA governance,
+  machine-readable GIR/CRL schemas, and desensitize-and-package tooling for open-sourcing
+  a private brain. Use it when an agent must remember across sessions, keep an auditable
+  ledger and coordinates, or migrate a private brain into a clean open-source package.
+  Local-first, data sovereignty, MIT.
+  可移植、开源的『第二大脑』框架与治理工具集：把 AI agent 从按会话工作的助手升级为跨会话
+  持续成长的大脑 OS。包含五层管理协议通用模板、治理纪律（诚实边界、坐标纪律、实例化守卫、
+  MEA）、机器可读 GIR/CRL schema，以及脱敏打包工具，让你把自己的私人脑安全脱敏后开源。
+  本地优先，数据主权，MIT 许可。
+license: MIT
+compatibility: >
+  For agent platforms that load SKILL.md-style instructions (DeepSeek Harness / WorkBuddy
+  and other agent workbenches). Python 3.8+ for the meta/ and tools/ scripts; git is
+  optional (used for versioning). No network access and no third-party service required.
+metadata:
+  version: "0.3.1"
+  homepage: "https://github.com/DiaryOfUranus/second-brain-framework"
 ---
 
 # 第二大脑（Second Brain）

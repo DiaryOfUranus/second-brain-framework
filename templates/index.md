@@ -3,7 +3,7 @@
 > 本文件是**本机第二大脑实例**的唤醒唯一必读文件（通用模板）。
 > 它不是其他实例的脑——其他实例的脑只是本环境大脑的方法论模板与理论的来源。
 > 本脑所有状态、路径、台账、日志均为本机实际。
-> 规则在 skill（`skill/SKILL.md`），状态在本文件与各子目录。本文件只登记状态与指针。
+> 规则在 skill（`second-brain-framework/SKILL.md`），状态在本文件与各子目录。本文件只登记状态与指针。
 
 ## 文件清单
 
@@ -42,4 +42,4 @@
 - 理论原文 **live canonical**：`{{THEORY_CANONICAL}}`（你的理论权威源；本脑 base/ 仅存 seed 指针）
 - 理论原文离线备份：（你的备份路径，禁止反向覆盖 canonical）
 - 第二大脑方法论模板：（你获得的方法论来源，仅作模板）
-- skill 源：`skill/`（含 SKILL.md、references/、skills/ 子技能）
+- skill 源：`second-brain-framework/`（含 SKILL.md、references/、skills/ 子技能）

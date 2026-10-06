@@ -15,7 +15,7 @@ assemble.py — 构建第二大脑开源纯净版（复制 + 脱敏编排）
   SB_SOURCE_SKILL  : 私人 second-brain skill 根（默认 ~/.workbuddy/skills/second-brain）
 
 处理内容：
-  skill/SKILL.md + references/*（剔除 base-*.md 理论 seed）+ scripts/* + skills/*（递归）
+  second-brain-framework/SKILL.md + references/*（剔除 base-*.md 理论 seed）+ scripts/* + skills/*（递归）
   两个机器可读 schema（GIR / CRL）
   定位白皮书 → docs/positioning.md
 
@@ -48,7 +48,7 @@ def copy_scrub_skill():
     # SKILL.md
     src_skill_md = os.path.join(SRC_SKILL, "SKILL.md")
     if os.path.exists(src_skill_md):
-        scrub_file(src_skill_md, os.path.join(OUT, "skill", "SKILL.md"))
+        scrub_file(src_skill_md, os.path.join(OUT, "second-brain-framework", "SKILL.md"))
         n += 1
     # references（剔除 base-*.md）
     ref_src = os.path.join(SRC_SKILL, "references")
@@ -60,7 +60,7 @@ def copy_scrub_skill():
                 print(f"  [skip] references/{fn}（理论 seed，不进框架版）")
                 continue
             scrub_file(os.path.join(ref_src, fn),
-                       os.path.join(OUT, "skill", "references", fn))
+                       os.path.join(OUT, "second-brain-framework", "references", fn))
             n += 1
     # scripts
     scr_src = os.path.join(SRC_SKILL, "scripts")
@@ -69,12 +69,12 @@ def copy_scrub_skill():
             if not fn.endswith(".py"):
                 continue
             scrub_file(os.path.join(scr_src, fn),
-                       os.path.join(OUT, "skill", "scripts", fn))
+                       os.path.join(OUT, "second-brain-framework", "scripts", fn))
             n += 1
     # skills（子技能树，递归）
     sub_src = os.path.join(SRC_SKILL, "skills")
     if os.path.isdir(sub_src):
-        cnt = scrub_tree(sub_src, os.path.join(OUT, "skill", "skills"))
+        cnt = scrub_tree(sub_src, os.path.join(OUT, "second-brain-framework", "skills"))
         n += cnt
     return n
 

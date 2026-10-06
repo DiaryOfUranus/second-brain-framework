@@ -16,7 +16,7 @@ upgrade_pack.py — 第二大脑升级包管理（可与其他管理工具交换
   import <pkg.json>           把外部升级包暂存到 brain/inbox/<id>/ 待接收方审核（不自动覆盖）
 
 交换格式：manifest.json 遵循 "second-brain-upgrade" v1 schema
-（见 skill/references/upgrade-manager.md）。
+（见 second-brain-framework/references/upgrade-manager.md）。
 
 便携性：脑仓库根通过环境变量 SB_BRAIN 指定，默认 ~/.workbuddy/brain。
 """
