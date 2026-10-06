@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-brain_check.py — 第二大脑·脑健康检查器 (v1.0, 开源便携版)
+brain_check.py — 第二大脑·脑健康检查器 (v1.1, 开源便携版)
 
 本件是「代际审阅」后补强的脑侧机械件：把"锚点毒性监测／脑健康机检／备份节律"
 从软纪律升级为可由 post-commit 自动触发的硬检查。原始设计补强了审阅提出的
 "锚点毒性无监测"与"单点故障／备份节律"两类病灶。
 
-六项检查：
+七项检查：
   1. 结构完整性  ：index.md / ledger.md / VERSION.json 存在且 VERSION 合法 JSON；
                     git 工作树是否脏（脏＝黄，避免活跃会话误红）。
   2. 台账违规    ：活跃条目须含"触发:"且无违禁词（择机/以后再说/适时/看情况）；
@@ -20,6 +20,12 @@ brain_check.py — 第二大脑·脑健康检查器 (v1.0, 开源便携版)
                     任一超 BACKUP_STALE_DAYS＝7 天 → 黄（备份节律红灯）。
   6. 脱脑演练    ：距上次脱脑演练（state.last_offline_drill）超
                     OFFLINE_DRILL_STALE_DAYS＝90 天或无记录 → 黄（建议定期脱脑）。
+  7. 版本指针    ：v1.1 新增。三处互校，任一不一致即黄：
+                    a. VERSION.json.current_commit ≡ versions[-1].commit
+                       （版本主体提交；与 git HEAD 的距离**不作判据**——
+                        否则每轮收口必产生纯回填空提交）；
+                    c. CHANGELOG.md 逐版本 commit 登记 vs VERSION.json 同版本
+                       主体提交（全量枚举判据，防"只校当前版本行"的漏检）。
 
 退出码：0=全绿 / 1=有黄(提醒) / 2=有红(阻断)。
 
@@ -217,6 +223,60 @@ def check_offline_drill(state, results):
                         f"距上次脱脑演练 {dd} 天（> {OFFLINE_DRILL_STALE_DAYS}），建议重跑"))
 
 
+def check_version_pointer(results):
+    """⑦版本指针一致性（v1.1 新增，移植自私有实例 brain_check v1.5 第⑦⑧项）。
+
+    a. VERSION.json.current_commit ≡ versions[-1].commit（版本主体提交）。
+       口径说明：不判"指针落后 git HEAD"——"修指针"的提交本身又使 HEAD 前进，
+       旧口径下每轮收口必产生纯回填空提交；且 git 对不可解析的 rev 返回
+       非零退出码＋空 stdout（不抛异常），旧写法 behind 会被当成 0，
+       导致「不可解析」分支永不触发（判据存在 ≠ 判据会触发）。
+    c. CHANGELOG.md 逐版本 commit 登记 vs VERSION.json 同版本主体提交。
+       判据方向＝全量枚举（不是"缺 X"型）：第 a 条只校当前版本行，
+       曾有历史条目标了父提交而主体提交实为另一个，跨多轮未被任何机检触及。
+
+    只读，不修——发现不一致时人工回填为版本主体提交。
+    """
+    try:
+        with open(os.path.join(BRAIN, "VERSION.json"), encoding="utf-8") as f:
+            vj = json.load(f)
+    except Exception:
+        return  # 结构检查已覆盖非法 JSON
+    cur_ver = (vj.get("current_version") or "").strip()
+    ptr = (vj.get("current_commit") or "").strip()
+    try:
+        ent_commit = ((vj.get("versions") or [{}])[-1].get("commit") or "").strip()
+    except Exception:
+        ent_commit = ""
+
+    # --- a. commit 指针 ≡ 版本主体提交 ---
+    if ptr and ent_commit and ptr != ent_commit:
+        results.append(("黄", "版本指针",
+                        f"VERSION.json.current_commit={ptr} ≠ "
+                        f"versions[-1].commit={ent_commit}（版本主体提交口径；"
+                        f"snapshot/export 基准可能不对，须回填）"))
+
+    # --- c. CHANGELOG 逐版本 commit 登记 vs VERSION.json（全量枚举）---
+    cl_path = os.path.join(BRAIN, "CHANGELOG.md")
+    if os.path.exists(cl_path) and cur_ver:
+        try:
+            with open(cl_path, encoding="utf-8") as f:
+                cl_txt = f.read()
+            reg = {v.get("version"): (v.get("commit") or "").strip()
+                   for v in (vj.get("versions") or []) if v.get("commit")}
+            pairs = re.findall(r"^## (v[\d.]+) —.*?commit\s*`([0-9a-f]{7,})`",
+                               cl_txt, re.M)
+            mism = [(ver, sha, reg[ver]) for ver, sha in pairs
+                    if ver in reg and reg[ver] and reg[ver] != sha]
+            for ver, sha, exp in mism:
+                results.append(("黄", "版本指针",
+                                f"CHANGELOG {ver} 标注 commit {sha} ≠ "
+                                f"VERSION.json 同版本主体提交 {exp}"
+                                f"（逐版本登记不一致；须回填为版本主体提交）"))
+        except Exception as e:
+            results.append(("黄", "版本指针", f"版本指针 CHANGELOG 对账执行异常：{e}"))
+
+
 def main():
     ap = argparse.ArgumentParser(description="第二大脑·脑健康检查器")
     ap.add_argument("--json", action="store_true", help="输出 JSON 报告")
@@ -238,6 +298,7 @@ def main():
     check_expiry_and_self(state, results)
     check_backup(results)
     check_offline_drill(state, results)
+    check_version_pointer(results)
 
     # 更新自身运行时间（不阻塞，失败不报错）
     state["last_run"] = NOW.timestamp()
@@ -248,7 +309,7 @@ def main():
 
     if args.json:
         out = {
-            "tool": "brain_check", "version": "1.0",
+            "tool": "brain_check", "version": "1.1",
             "checked_at": NOW.strftime("%Y-%m-%d %H:%M"),
             "severity": "red" if reds else ("yellow" if yellows else "green"),
             "results": [{"level": lv, "check": ck, "detail": dt}
@@ -256,11 +317,11 @@ def main():
         }
         print(json.dumps(out, ensure_ascii=False, indent=2))
     else:
-        print(f"═══ 第二大脑·脑健康检查 v1.0 ═══  {NOW.strftime('%Y-%m-%d %H:%M')}")
+        print(f"═══ 第二大脑·脑健康检查 v1.1 ═══  {NOW.strftime('%Y-%m-%d %H:%M')}")
         print(f"严重度：{'红(阻断)' if reds else ('黄(提醒)' if yellows else '绿(正常)')}")
         print(f"─" * 50)
         if not results:
-            print("  全部通过（结构/台账/过期/日志/备份/脱脑 六项均无异常）")
+            print("  全部通过（结构/台账/过期/日志/备份/脱脑/版本指针 七项均无异常）")
         for lv, ck, dt in results:
             print(f"  [{lv}] {ck}：{dt}")
         print(f"─" * 50)

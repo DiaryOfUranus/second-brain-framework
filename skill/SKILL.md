@@ -1,7 +1,7 @@
 ---
 name: second-brain-framework
 description: "可移植、开源的『第二大脑』框架与治理工具集：把 AI agent 从按会话工作的助手升级为跨会话持续成长的大脑 OS。包含五层管理协议通用模板、治理纪律（诚实边界、坐标纪律、实例化守卫、MEA）、机器可读 GIR/CRL schema，以及 scrub/assemble 脱敏打包工具，让你把自己的私人脑安全脱敏后开源。本地优先，数据主权，MIT 许可。"
-version: 0.2.6
+version: 0.3.0
 ---
 
 # 第二大脑（Second Brain）
@@ -42,7 +42,7 @@ version: 0.2.6
 第一次用，只做三件事：
 
 1. **实例化你的脑**：把本仓库复制到本地，用 `templates/` 建出 `index.md` / `self-model.md` 等状态文件。具体命令见 [docs/quickstart.md](../docs/quickstart.md)。
-2. **装健康检查钩子**：`cp meta/hooks/post-commit .git/hooks/post-commit`，从此每次提交自动跑 `meta/brain_check.py`（六检查项，红黄绿灯）。
+2. **装健康检查钩子**：`cp meta/hooks/post-commit .git/hooks/post-commit`，从此每次提交自动跑 `meta/brain_check.py`（七检查项，红黄绿灯；v1.1 起含版本指针一致性对账）。多条检查器建议用 `meta/run_all_selftests.py` 收成单一入口（PASS/FAIL/REFUSED/SKIP 四态，`--selftest` 红翻转自测）。
 3. **日常启动**：每次有实质工作的会话开场，先输出「启动声明」，结束前跑 `meta/brain_commit.py` 把脑变更提交进 Git。
 
 > 不确定该不该用？看 [docs/FAQ.md](../docs/FAQ.md) 的「什么时候该用 / 不该用」。
@@ -236,3 +236,4 @@ AI 自动：跑 `python tools/doctor.py`（只读诊断），报出 `.git` 是�
 - `references/theory-hindcast-empirics.md` — 跨理论实证 Hindcast
 - `references/implementation-notes.md` — 改造落地件、互鉴工程件、互鉴纪律、诚实边界
 - `references/loop-governance-dna.md` / `references/mu-language-v2-ref.md` — 互鉴方法论参考
+- `docs/experimental.md` — **实验性纪律**（EXPERIMENTAL，未过验证周期）：预言账本（前向差异流）／判据准入须附变异用例；配套 `meta/experimental/honesty_lint.py`（诚实与数字纪律静态机检，判据面有限，终判在人）
