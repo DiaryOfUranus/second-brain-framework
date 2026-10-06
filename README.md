@@ -80,8 +80,8 @@ python meta/brain_check.py
 
 ## License & principles
 
-- **License**: MIT (see `LICENSE`).
-- **Non-negotiable**: data sovereignty & local-first. This framework collects, uploads, and depends on **no third-party service**; your brain stays entirely on your machine. Open-sourcing exists so the ecosystem and community can discover, review, and co-build — not to raise it in isolation.
+- **License**: MIT (see [`LICENSE`](LICENSE)).
+- **Non-negotiable**: data sovereignty & local-first — full statement in [`PRINCIPLES.md`](PRINCIPLES.md). This framework collects, uploads, and depends on **no third-party service**; your brain stays entirely on your machine. Open-sourcing exists so the ecosystem and community can discover, review, and co-build — not to raise it in isolation.
 - **Honesty discipline overflow**: if you build on this framework, keep the candidate·falsifiable labels and coordinate discipline, to avoid external misreading as "already claimed to be alive".
 
 ---
