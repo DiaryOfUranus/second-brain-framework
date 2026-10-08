@@ -60,7 +60,7 @@ metadata:
 第一次用，只做三件事：
 
 1. **实例化你的脑**：把本仓库复制到本地，用 `templates/` 建出 `index.md` / `self-model.md` 等状态文件。具体命令见 [docs/quickstart.md](../docs/quickstart.md)。
-2. **装健康检查钩子**：`cp meta/hooks/post-commit .git/hooks/post-commit`，从此每次提交自动跑 `meta/brain_check.py`（七检查项，红黄绿灯；v1.1 起含版本指针一致性对账）。多条检查器建议用 `meta/run_all_selftests.py` 收成单一入口（PASS/FAIL/REFUSED/SKIP 四态，`--selftest` 红翻转自测）。
+2. **装健康检查钩子**：`cp meta/hooks/post-commit .git/hooks/post-commit`，从此每次提交自动跑 `meta/brain_check.py`（九检查项，红黄绿灯；v1.2 起含版本指针不可触发具名／行尾一致性 WARN／自检覆盖 WARN，台账豁免仅认显式记号并带影子读数）。多条检查器建议用 `meta/run_all_selftests.py` 收成单一入口（PASS/FAIL/REFUSED/SKIP 四态，`--selftest` 红翻转自测）。
 3. **日常启动**：每次有实质工作的会话开场，先输出「启动声明」，结束前跑 `meta/brain_commit.py` 把脑变更提交进 Git。
 
 > 不确定该不该用？看 [docs/FAQ.md](../docs/FAQ.md) 的「什么时候该用 / 不该用」。
