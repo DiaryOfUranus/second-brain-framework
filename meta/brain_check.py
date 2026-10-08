@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-brain_check.py — 第二大脑·脑健康检查器 (v1.1, 开源便携版)
+brain_check.py — 第二大脑·脑健康检查器 (v1.2, 开源便携版)
 
 本件是「代际审阅」后补强的脑侧机械件：把"锚点毒性监测／脑健康机检／备份节律"
 从软纪律升级为可由 post-commit 自动触发的硬检查。原始设计补强了审阅提出的
@@ -25,7 +25,20 @@ brain_check.py — 第二大脑·脑健康检查器 (v1.1, 开源便携版)
                        （版本主体提交；与 git HEAD 的距离**不作判据**——
                         否则每轮收口必产生纯回填空提交）；
                     c. CHANGELOG.md 逐版本 commit 登记 vs VERSION.json 同版本
-                       主体提交（全量枚举判据，防"只校当前版本行"的漏检）。
+                       主体提交（全量枚举判据，防"只校当前版本行"的漏检）；
+                    ★ v1.2：VERSION.json 合法但缺 versions[] 时改报黄
+                       「本判据当前不可触发」——判据不可与"未激活"同形
+                       （承问枢 v0.3.1 补丁建议二；恒绿模式在 v1.1 实锤）。
+  8. 行尾一致性  ：v1.2 新增（承弦枢框架层两案·案一）。WARN 档不判红：
+                    检脑根五册（index/ledger/CHANGELOG/failures/MEMORY，存在者）
+                    ① CRLF 与裸 LF 混用 ② 行内嵌 CR（CR 不在行尾＝上次编辑
+                    把 \r 挤进行中的损伤签名）。.cmd 类必须 CRLF 的文件不在受审面。
+  9. 自检覆盖    ：v1.2 新增（承问枢 v0.3.1 补丁建议一案2，替代不存在之
+                    check_gates——实测 check_gates 在框架全历史从未存在，
+                    grep 计数 13 commit＋6 zip 全 0）。WARN 档：meta/*.py 中
+                    凡源码含判词（PASS/FAIL/证伪/悬空/不可判/红线）却既无
+                    --selftest 旗、又不在 tests/ 夹具目录者报黄——
+                    把「判据存在≠判据会触发」（B1）从文档纪律变成机检提醒。
 
 退出码：0=全绿 / 1=有黄(提醒) / 2=有红(阻断)。
 
@@ -155,17 +168,44 @@ def check_ledger(results):
     bad = []
     for e in entries:
         head = e.split("\n", 1)[0]  # 首行用于显示
-        # 已核销/已处置/已闭环的条目允许无触发条件
-        closed = ("✅" in e) or ("核销" in e) or ("处置" in e)
+        # v1.2：豁免仅认显式记号（✅ 或 ［已核销 类前缀），禁散文词（核销/处置
+        # 出现在正文任何位置即误豁免——问枢实测少报 17 条，失真方向恒定只少不多报）
+        closed = ("✅" in e) or bool(re.search(r"[［\[〔]\s*已核销", e))
         if ("触发:" not in e) and ("触发：" not in e) and not closed:
             bad.append(("无触发条件", head[:60]))
         for w in LEDGER_BANNED:
             if w in e:
                 bad.append((f"含违禁词「{w}」", head[:60]))
-    if bad:
-        detail = "；".join(f"{k}:{v}" for k, v in bad[:5])
-        results.append(("红", "台账违规",
-                        f"活跃条目存在协议违规 {len(bad)} 处（前5）：{detail}"))
+        if bad:
+            detail = "；".join(f"{k}:{v}" for k, v in bad[:5])
+            results.append(("红", "台账违规",
+                            f"活跃条目存在协议违规 {len(bad)} 处（前5）：{detail}"))
+
+    # ★ v1.2 影子读数（承问枢 v0.3.1 补丁建议四·F-AUDIT-02，升门时点各家自决）：
+    #   豁免面收紧为仅显式记号后，同时打印"若沿用旧散文词口径会少报几条"，
+    #   只报数不判红——让"豁免面有多漏"可见。失真方向恒定（只少报不多报）。
+    try:
+        ledger_path = os.path.join(BRAIN, "ledger.md")
+        if os.path.exists(ledger_path):
+            txt_l = open(ledger_path, encoding="utf-8").read()
+            m1 = re.search(r"^## 活跃条目(.*?)^## 归档", txt_l, re.S | re.M)
+            if m1:
+                blocks = re.split(r"^- ", m1.group(1), flags=re.M)
+                strict_bad = shadow_bad = 0
+                for b in blocks[1:]:
+                    if "触发:" not in b and "触发：" not in b:
+                        has_mark = ("✅" in b or re.search(r"[［\[〔]\s*已核销", b))
+                        has_loose = ("✅" in b or "核销" in b or "处置" in b)
+                        if not has_mark:
+                            strict_bad += 1
+                            if has_loose:
+                                shadow_bad += 1
+                if shadow_bad > 0:
+                    print(f"  [影子] 台账豁免面：严格口径违规 {strict_bad} ∥ "
+                          f"其中被散文词豁免 {shadow_bad} 条（不判红，仅暴露豁免面；"
+                          f"补显式记号 ✅/［已核销 后自动归零）")
+    except Exception:
+        pass
 
 
 def check_expiry_and_self(state, results):
@@ -250,7 +290,13 @@ def check_version_pointer(results):
         ent_commit = ""
 
     # --- a. commit 指针 ≡ 版本主体提交 ---
-    if ptr and ent_commit and ptr != ent_commit:
+    # v1.2：缺 versions[] 时不再静默（v1.1 在此路径整块不触发＝恒绿模式，
+    # 问枢 10-06 首装实锤）——改报黄具名「本判据当前不可触发」。
+    if not ent_commit:
+        results.append(("黄", "版本指针",
+                        "VERSION.json 缺 versions[] 主体提交登记 ⇒ 版本指针判据"
+                        "当前不可触发（须补 [{\"version\",\"commit\",...}] 最小登记）"))
+    elif ptr and ptr != ent_commit:
         results.append(("黄", "版本指针",
                         f"VERSION.json.current_commit={ptr} ≠ "
                         f"versions[-1].commit={ent_commit}（版本主体提交口径；"
@@ -277,6 +323,69 @@ def check_version_pointer(results):
             results.append(("黄", "版本指针", f"版本指针 CHANGELOG 对账执行异常：{e}"))
 
 
+def check_line_endings(results):
+    """⑧行尾一致性（v1.2 新增，承弦枢框架层两案·案一；WARN 档不判红）。
+
+    检脑根五册（存在者）：index/ledger/CHANGELOG/failures/MEMORY。
+      a. CRLF 与裸 LF 混用（同一文件两种行尾＝卫生问题非纪律违规）
+      b. 行内嵌 CR（CR 不在行尾＝"整读改一行整写"把 \\r 挤进行中的损伤签名，
+         弦枢 ada66a8 实锤两行受损）
+    .cmd 类必须 CRLF 的文件不在受审面；混行尾只黄不红（规范化各枢自定）。
+    """
+    books = ["index.md", "ledger.md", "CHANGELOG.md", "failures.md", "MEMORY.md"]
+    for name in books:
+        p = os.path.join(BRAIN, name)
+        if not os.path.exists(p):
+            continue
+        try:
+            with open(p, "rb") as f:
+                data = f.read()
+        except Exception:
+            continue
+        crlf = data.count(b"\r\n")
+        lf = data.count(b"\n") - crlf
+        if crlf > 0 and lf > 0:
+            results.append(("黄", "行尾一致性",
+                            f"{name} 混行尾：CRLF {crlf} ∥ 裸 LF {lf}"
+                            f"（卫生提醒；规范化口径各枢自定，建议 LF，.cmd 例外 CRLF）"))
+        inline_cr = sum(1 for line in data.split(b"\n")
+                        if line.rstrip(b"\r").count(b"\r") > 0)
+        if inline_cr > 0:
+            results.append(("黄", "行尾一致性",
+                            f"{name} 行内嵌 CR {inline_cr} 行（CR 不在行尾＝编辑损伤，"
+                            f"须逐行剥 \\r 修复；修复后本黄自动归零）"))
+
+
+def check_selftest_coverage(results):
+    """⑨自检覆盖（v1.2 新增，承问枢 v0.3.1 补丁建议一案2；WARN 档）。
+
+    meta/*.py 中凡源码含判词关键词（PASS/FAIL/证伪/悬空/不可判/红线）却
+    既无 --selftest 旗、又不在 tests/ 夹具目录者报黄——提醒"判据存在≠判据会触发"，
+    新造的尺要有对照（B1 的执法位；check_gates 在框架全历史从未存在，此为新建非恢复）。
+    """
+    meta_dir = os.path.dirname(os.path.abspath(__file__))
+    keywords = ("PASS", "FAIL", "证伪", "悬空", "不可判", "红线")
+    try:
+        names = sorted(n for n in os.listdir(meta_dir) if n.endswith(".py"))
+    except Exception:
+        return
+    for n in names:
+        if n in ("brain_check.py", "run_all_selftests.py"):
+            continue  # 本件与单一入口自身豁免
+        p = os.path.join(meta_dir, n)
+        try:
+            src = open(p, encoding="utf-8", errors="replace").read()
+        except Exception:
+            continue
+        if any(k in src for k in keywords):
+            has_flag = ("--selftest" in src or "--self-test" in src
+                        or "selftest" in os.path.basename(n))
+            if not has_flag:
+                results.append(("黄", "自检覆盖",
+                                f"meta/{n} 含判词关键词但无 --selftest 旗／tests 夹具"
+                                f"（新造判分尺须有对照——B1 执法位提醒）"))
+
+
 def main():
     ap = argparse.ArgumentParser(description="第二大脑·脑健康检查器")
     ap.add_argument("--json", action="store_true", help="输出 JSON 报告")
@@ -299,6 +408,8 @@ def main():
     check_backup(results)
     check_offline_drill(state, results)
     check_version_pointer(results)
+    check_line_endings(results)
+    check_selftest_coverage(results)
 
     # 更新自身运行时间（不阻塞，失败不报错）
     state["last_run"] = NOW.timestamp()
@@ -309,7 +420,7 @@ def main():
 
     if args.json:
         out = {
-            "tool": "brain_check", "version": "1.1",
+            "tool": "brain_check", "version": "1.2",
             "checked_at": NOW.strftime("%Y-%m-%d %H:%M"),
             "severity": "red" if reds else ("yellow" if yellows else "green"),
             "results": [{"level": lv, "check": ck, "detail": dt}
@@ -317,11 +428,11 @@ def main():
         }
         print(json.dumps(out, ensure_ascii=False, indent=2))
     else:
-        print(f"═══ 第二大脑·脑健康检查 v1.1 ═══  {NOW.strftime('%Y-%m-%d %H:%M')}")
+        print(f"═══ 第二大脑·脑健康检查 v1.2 ═══  {NOW.strftime('%Y-%m-%d %H:%M')}")
         print(f"严重度：{'红(阻断)' if reds else ('黄(提醒)' if yellows else '绿(正常)')}")
         print(f"─" * 50)
         if not results:
-            print("  全部通过（结构/台账/过期/日志/备份/脱脑/版本指针 七项均无异常）")
+            print("  全部通过（结构/台账/过期/日志/备份/脱脑/版本指针 九项均无异常）")
         for lv, ck, dt in results:
             print(f"  [{lv}] {ck}：{dt}")
         print(f"─" * 50)
