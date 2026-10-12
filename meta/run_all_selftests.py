@@ -44,6 +44,15 @@ MANIFEST = [
                                     __import__("os").path.join(
                                         __import__("os").path.dirname(__file__),
                                         "brain_check.py")]),
+    # 固退写器公共件闸（写器P-1/P-2 机械落形·2026-10-12 框架收敛）：
+    # second-brain-framework/scripts/ledger_writer.py 自带 8 条负控夹具
+    # （锚不唯一/裸子串/CRLF保型/幂等SKIP/缺触发栏/全档撞号/LF保型/双fp拒绝），
+    # 全过 rc=0 —— required 档，进单一入口不靠记得跑（写器P-2「跑一遍能拦住才是防线」）。
+    ("ledger_writer_gates", "required", [PY, __import__("os").path.join(
+                                            __import__("os").path.dirname(__file__),
+                                            "..", "second-brain-framework",
+                                            "scripts", "ledger_writer.py"),
+                                         "--selftest"]),
     # 示例 2（data-gated）：一个会探测环境并大声拒绝的检查器占位。
     # 把它换成你的真实检查器；缺失前置时请让它打印「REFUSED: 缺 X」并以
     # 非零码退出（推荐约定：exit 69 = 环境缺失）。

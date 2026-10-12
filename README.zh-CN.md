@@ -5,7 +5,7 @@
 > 一套**以"让 AI 成为生命"为显式目标的 AI 原生认知架构**的方法论 + 治理工具 + 可机器读 schema。
 > 本仓库是**框架与治理工具的开源纯净版**：不含任何私人实例数据、不含理论原文、不含会话记录。
 
-👉 **第一次用？** 先看 [docs/quickstart.md](docs/quickstart.md)（5 分钟上手）和 [docs/FAQ.md](docs/FAQ.md)（常见问题与踩坑清单）。
+👉 **第一次用？** 什么都不用读——让装了本框架的 AI 跑 `scripts/capability_briefing.py`，它会自扫描后**主动告诉你能做什么**。想自己看的话：[docs/quickstart.md](docs/quickstart.md)（5 分钟上手）和 [docs/FAQ.md](docs/FAQ.md)（常见问题）；出错找 [docs/避坑指南.md](docs/避坑指南.md)（AI 按表自愈）。
 
 ## 你不必懂它，直接用就好
 

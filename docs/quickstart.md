@@ -12,6 +12,18 @@
 - **Git**：用来让「大脑的演进」可 diff / 可回滚。
 - **一个本地目录**：默认 `~/.workbuddy/brain`，也可任意路径（用 `SB_BRAIN` 环境变量覆盖）。
 
+## 步骤 0（可选·推荐）：让 AI 自扫描并告诉你它能干什么
+
+> 不想做这一步？跳过即可——下面的步骤也可以全部让 AI 代办。
+
+```bash
+python second-brain-framework/scripts/capability_briefing.py
+```
+
+装了第二大脑的 AI 运行它会自扫描框架，产出一段能力简报（能做什么＋怎么触发）。
+**本框架的设计约定是「不用学」**：学习由 AI 承担——AI 自扫描、主动报告、自动编排，
+你只管用自然语言说需求。
+
 ## 步骤 1：把框架复制为你的脑
 
 ```bash
@@ -87,4 +99,4 @@ python meta/brain_check.py
 - 想系统了解五层协议与治理纪律 → 读 `second-brain-framework/SKILL.md`（较长，按需下潜）
 - 想把自己的脑**安全脱敏后开源/分享** → 看 `tools/scrub.py` + `tools/assemble.py`，先跑 `python tools/assemble.py --check-only` 自检有无残留私人标识
 - 想导出给别的工具用 → `python meta/export_second_brain.py`
-- 常见问题与踩坑 → [docs/FAQ.md](FAQ.md)
+- 常见问题与踩坑 → [docs/FAQ.md](FAQ.md)；出错自愈 → [docs/避坑指南.md](避坑指南.md)（AI 按表自恢复，你不用读）

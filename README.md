@@ -4,7 +4,7 @@
 
 > An AI-native cognitive architecture whose explicit goal is to help AI **become a living mind** — shipped as methodology + governance tooling + machine-readable schemas. This repo is the **open-source clean edition**: no private instance data, no theory source texts, no conversation logs.
 
-👉 **First time?** Start with [docs/quickstart.md](docs/quickstart.md) (5-minute onboarding) and [docs/FAQ.md](docs/FAQ.md) (common questions & anti-patterns).
+👉 **First time?** You don't need to read anything — ask your AI (with this framework installed) to run `scripts/capability_briefing.py`: it self-scans and **tells you what it can do**. Prefer reading? [docs/quickstart.md](docs/quickstart.md) (5-minute onboarding) and [docs/FAQ.md](docs/FAQ.md) (common questions); for failures see docs/避坑指南.md (anti-patterns & self-recovery — your AI reads it, not you).
 
 ## You don't need to understand it — just use it
 
