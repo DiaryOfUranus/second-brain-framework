@@ -66,7 +66,7 @@ mkdir -p base kb projects sessions audits patterns tmp
 cp templates/base/骨架.md base/骨架.md   # 替换 {{理论名}} 等占位符
 
 # 3. 安装 post-commit 钩子（自动跑脑健康检查，绝不二次 commit）
-cp meta/hooks/post-commit.sh .git/hooks/post-commit
+cp meta/hooks/post-commit .git/hooks/post-commit
 chmod +x .git/hooks/post-commit
 
 # 4. 跑一次脑健康检查
