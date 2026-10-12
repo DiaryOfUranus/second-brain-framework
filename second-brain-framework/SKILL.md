@@ -18,7 +18,7 @@ compatibility: >
   and other agent workbenches). Python 3.8+ for the meta/ and tools/ scripts; git is
   optional (used for versioning). No network access and no third-party service required.
 metadata:
-  version: "0.3.8"
+  version: "0.3.3"
   homepage: "https://github.com/DiaryOfUranus/second-brain-framework"
 ---
 
@@ -75,7 +75,7 @@ metadata:
 第一次用，只做三件事：
 
 1. **实例化你的脑**：把本仓库复制到本地，用 `templates/` 建出 `index.md` / `self-model.md` 等状态文件。具体命令见 [docs/quickstart.md](../docs/quickstart.md)。
-2. **装健康检查钩子**：`cp meta/hooks/post-commit.sh .git/hooks/post-commit`，从此每次提交自动跑 `meta/brain_check.py`（九检查项，红黄绿灯；v1.2 起含版本指针不可触发具名／行尾一致性 WARN／自检覆盖 WARN，台账豁免仅认显式记号并带影子读数）。多条检查器建议用 `meta/run_all_selftests.py` 收成单一入口（PASS/FAIL/REFUSED/SKIP 四态，`--selftest` 红翻转自测）。
+2. **装健康检查钩子**：`cp meta/hooks/post-commit .git/hooks/post-commit`，从此每次提交自动跑 `meta/brain_check.py`（九检查项，红黄绿灯；v1.2 起含版本指针不可触发具名／行尾一致性 WARN／自检覆盖 WARN，台账豁免仅认显式记号并带影子读数）。多条检查器建议用 `meta/run_all_selftests.py` 收成单一入口（PASS/FAIL/REFUSED/SKIP 四态，`--selftest` 红翻转自测）。
 3. **日常启动**：每次有实质工作的会话开场，先输出「启动声明」，结束前跑 `meta/brain_commit.py` 把脑变更提交进 Git。
 
 > 不确定该不该用？看 [docs/FAQ.md](../docs/FAQ.md) 的「什么时候该用 / 不该用」。
@@ -144,9 +144,9 @@ metadata:
 - [ ] 工作日志已更新，值得记住的信息已提取
 - [ ] 若启用第二大脑：已输出显式启动声明（正负必居其一，四值当次实读脑文件）
 - [ ] 若启用第二大脑：代谢后已跑 `meta/brain_commit.py` 提交进 Git
-- [ ] 若启用第二大脑：会话末尾已抽高信号记忆进 `brain/inbox/` 待审（标准工具 `meta/session_extract.py` 系私有脑资产·纯净包不随附·AI 可按同义纪律手工抽取或自建；见 references/implementation-notes.md 诚实边界）
-- [ ] 若执行 shell/系统命令：必经真实执行入口护栏（标准工具 `meta/run_guarded.py` 系私有脑资产·纯净包不随附·无此件时以「先审后行」纪律等价执行或自建；见 references/implementation-notes.md）
-- [ ] 若高责任(1–2 级)任务：结论产出前已经第二意见复核（标准工具 `meta/second_opinion.py` 系私有脑资产·纯净包不随附·无此件时以「另开一虑复推」纪律等价执行；见 references/implementation-notes.md）
+- [ ] 若启用第二大脑：会话末尾已跑 `meta/session_extract.py` 抽高信号记忆进 `brain/inbox/` 待审
+- [ ] 若执行 shell/系统命令：必经 `meta/run_guarded.py` 真实执行入口（AST 语义护栏，BLOCK 直接拦截）
+- [ ] 若高责任(1–2 级)任务：结论产出前已过 `meta/second_opinion.py` 复核
 - [ ] 若多 AI 协作：已做模型分层路由与任务切片，每切片过 ⊢ 自检、高责任切片经 T3 审校
 - [ ] 若用已收录思考基座思考/分析/写作/评审：已做环 1 基座匹配检查、凡引用带坐标、未改原文（第五层）
 
@@ -183,7 +183,7 @@ metadata:
 
 ## 改造落地件与互鉴工程（详见 [references/implementation-notes.md](references/implementation-notes.md)）
 
-`meta/` 工具集（`declaration_gate` / `command_guard`+`run_guarded` / `session_extract` / `second_opinion` / `brain_commit` / `code_map` 等；**纯净包仅随附其中一部分**——`brain_check` / `brain_commit` / `brain_offline_drill` / `export_second_brain` / `upgrade_pack` 及钩子模板，其余系私有脑资产不随附、按该手册诚实边界自建或以纪律等价执行；均 stdlib-only）与从平行实例互鉴回补的工程件（`skill_audit` / `distill_to_skill` / `irreversible_guard` / `efficiency_ledger` / `prose_deslop_guard` 等），以及五条互鉴纪律（Continual Harness / 可组合分量 / Loop Engineering / openClaw / WorkBuddy 原生），完整说明与诚实边界在该手册。
+`meta/` 工具集（`declaration_gate` / `command_guard`+`run_guarded` / `session_extract` / `second_opinion` / `brain_commit` / `code_map` 等，均 stdlib-only、可运行）与从平行实例互鉴回补的工程件（`skill_audit` / `distill_to_skill` / `irreversible_guard` / `efficiency_ledger` / `prose_deslop_guard` 等），以及五条互鉴纪律（Continual Harness / 可组合分量 / Loop Engineering / openClaw / WorkBuddy 原生），完整说明与诚实边界在该手册。
 
 ## 故障自愈与友好报错（R 可靠性工程件）
 
