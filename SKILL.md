@@ -18,7 +18,7 @@ compatibility: >
   and other agent workbenches). Python 3.8+ for the meta/ and tools/ scripts; git is
   optional (used for versioning). No network access and no third-party service required.
 metadata:
-  version: "0.3.3"
+  version: "0.3.5"
   homepage: "https://github.com/DiaryOfUranus/second-brain-framework"
 ---
 
