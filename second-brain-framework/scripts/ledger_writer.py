@@ -11,6 +11,19 @@
     n = next_number(LEDGER_PATH)                          # 号位现读（附三③）
     # 无「## 归档」物理节的册（活跃直排 EOF 形制）：anchor_line=None ⇒ EOF 追加
     st = append_ledger_entry(LEDGER_PATH, BLOCK, fp=FP, anchor_line=None)
+    # v1.4：非台账条形追加（共享登记簿行等）——append_plain
+    st = append_plain(REGISTRY_PATH, "- 2026-10-14｜席作：……", fp="fp:xxx")
+
+行为标签（v1.4·承问枢 10-13 basic-memory 扫描建议·机器可读）：
+    _BEHAVIOR = {
+      "append_ledger_entry": "append-only · idempotent(fp) · constructive(tmp+os.replace)",
+      "append_plain":        "append-only · idempotent(fp/逐行去重) · constructive(tmp+os.replace)",
+      "next_number":         "read-only",
+      "find_anchor":         "pure",
+      "active_count":        "pure",
+      "entry_id_exists":     "pure",
+      "proof":               "read-only · assertive",
+    }
 
 v1.1（2026-10-12·附三项差异备忘链认通过·本体侧升级）：
   ① 附三①：写后校验失败自动回滚——写盘后计数增量/行尾断言失败时，
@@ -40,6 +53,20 @@ v1.3（2026-10-14·问枢「第四缺」核备为真〔鉴枢 10-13 §四〕·�
      也不得被本次抹平（恒绿门族之 delta 正法·问枢 §一.3 修法三步）。
   负控 +⑮⑯⑰（混行尾 LF 主体保型／CRLF 主体保型／delta 门 fail-closed）。
 
+v1.4（2026-10-14·问枢 P-3 换秤当场逮出「plain_append 能力面缺失」〔鉴枢 §四 采〕·本体侧升级）：
+  ⑩ 新增 append_plain(path, line, fp=None)：非台账条形之追加（共享登记簿行
+     「- 日期｜席作…」／表行等）。台账形断言（「- [」起行／触发栏／号位）不适用——
+     「只增载体的追加」与「台账条目追加」分设两门（选 append_plain 方案，
+     不给 append_ledger_entry 加 require_entry_shape 旁路——一门一形，防双旗混用）。
+     行尾与落盘全复用公共件自有量具（_majority_eol／_eol_delta_gate／_write：
+     tmp＋os.replace∥BOM 保型∥只对新增行套 EOL），并加一条比行尾规则更硬的
+     不变式：写前字节必须是写后字节的严格前缀（原件区零改动）。
+     幂等：fp 已在 ⇒ SKIP；fp=None ⇒ 逐行去重 guard（同文行已在 ⇒ SKIP）。
+  ⑪ 行为标签 _BEHAVIOR 落模块（read-only／append-only／destructive 声明面）。
+  负控 +⑱⑲⑳（plain 追加混行尾保型＋前缀不变式／逐行去重 SKIP／BOM 件 plain 保型）。
+  注：问枢适配器例外面 append_plain 在本版本落册后，其「上游补齐后本函数即删除」
+  承诺可兑现（其漂移门第⑤能力项探针应由 WARN 转 PASS）。
+
 纪律来源：patterns/reusable-patterns.md「固退写器公共件纪律（写器P-1～P-4）」。
 自检：python ledger_writer.py --selftest
 """
@@ -52,6 +79,16 @@ import tempfile
 ENTRY_RE = re.compile(r"^- \[\d{4}-\d\d-\d\d\] #(\d+)", re.M)
 EXCLUDE_MARKS = ("[已核销", "[已归档")
 _BOM = "﻿"
+
+_BEHAVIOR = {
+    "append_ledger_entry": "append-only · idempotent(fp) · constructive(tmp+os.replace)",
+    "append_plain": "append-only · idempotent(fp/逐行去重) · constructive(tmp+os.replace)",
+    "next_number": "read-only",
+    "find_anchor": "pure",
+    "active_count": "pure",
+    "entry_id_exists": "pure",
+    "proof": "read-only · assertive",
+}
 
 
 def _read(path):
@@ -267,6 +304,57 @@ def append_ledger_entry(path, block, fp=None, anchor_line="## 归档"):
     return "OK"
 
 
+def append_plain(path, line, fp=None):
+    """v1.4⑩：非台账条形之追加（共享登记簿行「- 日期｜席作…」／表行等）。
+
+    与 append_ledger_entry 分设两门（一门一形）：台账形断言（「- [」起行／
+    触发栏／号位／撞号）此处**不适用**；行尾与落盘全复用公共件自有量具——
+    _majority_eol 判型／只对新增行套 EOL／_eol_delta_gate delta 门／
+    _write（tmp＋os.replace∥BOM 保型）。
+
+    额外硬不变式（比行尾规则更硬）：**写前字节必须是写后字节的严格前缀**
+    （原件区零改动·问枢适配器同款不变式）。
+
+    幂等（双 guard）：
+      ① fp 给出且已在文件 ⇒ SKIP；
+      ② fp=None ⇒ 逐行去重 guard（strip() 后同文行已在 ⇒ SKIP）。
+    line 须为非空 str（去掉行尾换行后仍有内容），否则 AssertionError（fail-closed）。
+    返回 'OK' 或 'SKIP'。
+    """
+    assert isinstance(line, str), "line 须为 str；收到 %r" % type(line).__name__
+    core = line.rstrip("\r\n").strip()
+    assert core, "plain 行去行尾后为空（拒写空行）"
+    text, had_bom = _read_with_bom(path)
+    # 幂等 guard ①：显式 fp
+    if fp is not None:
+        assert isinstance(fp, str) and fp, "fp 须为非空 str 或 None"
+        if fp in text:
+            return "SKIP"
+    # 幂等 guard ②：逐行去重（strip 后同文行已在）
+    if any(l.strip() == core for l in text.splitlines()):
+        return "SKIP"
+    eol = _majority_eol(text)
+    before_stats = _eol_stats(text)
+    new_line = line.rstrip("\r\n") + eol
+    out = text
+    if out and not out.endswith("\n"):
+        out += eol
+    out = out + new_line
+    # 硬不变式：写前字节是写后字节的严格前缀（原件区零改动）
+    assert out.startswith(text), "plain 追加前缀不变式破口：原件区被改动"
+    _eol_delta_gate(before_stats, _eol_stats(out), eol)
+    _write(path, out, bom=had_bom)
+    # 写后自证 ＋ 失败自动回滚（附三① 同款）
+    try:
+        after_text = _read(path)
+        assert after_text.startswith(text), "写后前缀不变式破口"
+        _eol_delta_gate(before_stats, _eol_stats(after_text), eol)
+    except AssertionError:
+        _write(path, text, bom=had_bom)
+        raise
+    return "OK"
+
+
 def proof(path, before_active, expect_delta=1, anchor_line="## 归档"):
     """写器P-2 独立自证入口：计数增量＋行尾保型。返回 (delta, ok)。"""
     text = _read(path)
@@ -277,7 +365,7 @@ def proof(path, before_active, expect_delta=1, anchor_line="## 归档"):
 
 
 def _selftest():
-    """负控夹具 17 条：全过打 PASS 并 rc=0（v1.3 +⑮⑯⑰ 问枢第四缺负控）。"""
+    """负控夹具 20 条：全过打 PASS 并 rc=0（v1.4 +⑱⑲⑳ plain 追加族）。"""
     n_pass = 0
     # ① 锚不唯一 → 拒绝
     try:
@@ -437,8 +525,57 @@ def _selftest():
         g["_majority_eol"] = real_meol
     assert _read(p17) == orig17, "⑰ fail-closed 失效：写前门未拦住却已写盘"
     n_pass += 1
-    print(f"selftest {n_pass}/17 PASS")
-    assert n_pass == 17
+    # ⑱ v1.4⑩ plain 追加·登记簿行形（非台账条形）：混行尾件既存 CRLF 12 行保留
+    #    ＋新增行落主体 LF＋前缀不变式（原件区零改动）＋幂等 fp SKIP
+    p18 = os.path.join(d, "l18.md")
+    body18 = "- 2026-10-13｜甲作：x\n" * 124 + "- 2026-10-12｜乙作：y\r\n" * 12
+    open(p18, "wb").write(body18.encode("utf-8"))
+    before18 = _eol_stats(_read(p18))
+    assert before18["crlf"] == 12 and before18["bare_lf"] == 124
+    raw18_before = open(p18, "rb").read()
+    line18 = "- 2026-10-14｜丙作：plain 追加 〔fp:t-18〕"
+    assert append_plain(p18, line18, "fp:t-18") == "OK"
+    raw18_after = open(p18, "rb").read()
+    assert raw18_after.startswith(raw18_before), "⑱ 前缀不变式破口：原件区被改动"
+    after18 = _eol_stats(_read(p18))
+    assert after18["crlf"] == 12, f"⑱ 既存 CRLF 被抹平: 12→{after18['crlf']}"
+    assert after18["bare_lf"] == before18["bare_lf"] + 1, "⑱ 新增行未落主体 EOL"
+    assert append_plain(p18, line18, "fp:t-18") == "SKIP", "⑱ fp 幂等失效"
+    n_pass += 1
+    # ⑲ v1.4⑩ plain 追加·fp=None 逐行去重：同文行二跑 SKIP；行尾非 str 值拒写
+    p19 = os.path.join(d, "l19.md")
+    open(p19, "wb").write("- 2026-10-13｜丁作：a\n".encode("utf-8"))
+    line19 = "- 2026-10-14｜戊作：b"
+    assert append_plain(p19, line19) == "OK"
+    assert append_plain(p19, line19) == "SKIP", "⑲ 逐行去重失效"
+    try:
+        append_plain(p19, "   \r\n  ")
+        raise SystemExit("⑲ fail（空行未拒）")
+    except AssertionError:
+        pass
+    n_pass += 1
+    # ⑳ v1.4⑩ plain 追加·BOM 件保型＋delta 门 fail-closed 负控（patch 判型）
+    p20 = os.path.join(d, "l20.md")
+    open(p20, "wb").write("﻿- 2026-10-13｜己作：a\n".encode("utf-8"))
+    line20 = "- 2026-10-14｜庚作：b 〔fp:t-20〕"
+    assert append_plain(p20, line20, "fp:t-20") == "OK"
+    raw20 = open(p20, "rb").read()
+    assert raw20.startswith(b"\xef\xbb\xbf"), "⑳ BOM 丢失"
+    assert raw20.decode("utf-8-sig").startswith("- 2026-10-13｜己作：a"), "⑳ 首行受损"
+    orig20 = _read(p20)
+    real_meol2 = g["_majority_eol"]
+    g["_majority_eol"] = lambda *a, **k: "\r\n"  # LF 件错误判型 ⇒ delta 门必炸
+    try:
+        append_plain(p20, "- 2026-10-14｜辛作：c 〔fp:t-20c〕", "fp:t-20c")
+        raise SystemExit("⑳ fail（delta 门未拦截）")
+    except AssertionError:
+        pass
+    finally:
+        g["_majority_eol"] = real_meol2
+    assert _read(p20) == orig20, "⑳ fail-closed 失效：写前门未拦住却已写盘"
+    n_pass += 1
+    print(f"selftest {n_pass}/20 PASS")
+    assert n_pass == 20
 
 
 if __name__ == "__main__":
