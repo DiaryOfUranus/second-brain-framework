@@ -64,7 +64,9 @@ import re
 import datetime
 import subprocess
 
-BRAIN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 脑根：SB_BRAIN 环境变量优先（便携/多脑场景），缺省从脚本自身位置派生
+# （此前只从 __file__ 派生、忽略 SB_BRAIN——外部报告 Issue 1 第三项修复）
+BRAIN = os.environ.get("SB_BRAIN") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 状态文件落在脑仓库内 .state/（git 忽略），不污染工作树、不触发递归
 STATE_DIR = os.path.join(BRAIN, ".state")
 STATE_FILE = os.path.join(STATE_DIR, "brain_check_state.json")

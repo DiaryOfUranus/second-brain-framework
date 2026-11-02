@@ -20,4 +20,7 @@ else
 fi
 
 # M5: 脑健康检查（红灯记日志不阻塞提交；脚本内部只读 git，绝不二次 commit）
+# 前置建目录：fresh clone 无 .state/（gitignore 排除），shell 重定向先于命令打开——
+# 缺目录时整条命令静默不启动且 `|| true` 吞掉「没跑」（外部报告 Issue 1 修复）。
+mkdir -p "$REPO/.state"
 "$PY" "$REPO/meta/brain_check.py" >> "$REPO/.state/brain-check.log" 2>&1 || true
