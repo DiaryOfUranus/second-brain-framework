@@ -29,6 +29,7 @@ import hashlib
 import subprocess
 import datetime
 import argparse
+import re
 
 BRAIN = os.environ.get("SB_BRAIN") or os.path.expanduser("~/.workbuddy/brain")
 META = os.path.join(BRAIN, "meta")
@@ -228,7 +229,18 @@ def cmd_import(args):
     with open(pkg, encoding="utf-8") as f:
         m = json.load(f)
     pid = m.get("package_id", "unknown")
+    # 安全闸①（fail-closed）：package_id 须为单一安全组件——
+    # 禁路径分隔符/穿越（../）/盘符绝对路径。否则下方 rmtree 会删越界目录
+    # （外部 manifest 不可信：升级包天生来自其他实例/席位）。
+    if not isinstance(pid, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", pid):
+        print(f"非法 package_id: {pid!r}"
+              f"（须为单组件：字母/数字开头，仅 [A-Za-z0-9._-]，≤64 字符）")
+        sys.exit(1)
     dest = os.path.join(INBOX, pid)
+    # 安全闸②（双保险）：解析后路径必须仍落在 INBOX 之内
+    if os.path.realpath(dest) != os.path.join(os.path.realpath(INBOX), pid):
+        print(f"package_id 解析越界: {pid!r} → {os.path.realpath(dest)}（拒绝）")
+        sys.exit(1)
     if os.path.exists(dest):
         shutil.rmtree(dest)
     os.makedirs(dest, exist_ok=True)

@@ -35,3 +35,6 @@ Thumbs.db
 .env
 secret*
 credentials*
+
+# 私人标识映射（scrub.py 配置·真实值不入库——工具硬编码=把脱敏钥匙连仓库公开）
+tools/scrub_local.json

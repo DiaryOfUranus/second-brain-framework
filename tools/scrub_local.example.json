@@ -1,0 +1,15 @@
+{
+  "_comment": "scrub.py 私人标识配置样例。复制为 tools/scrub_local.json 并填入你自己的标识（该文件已被 .gitignore 排除，不会入库）。scrub_map 按『最长/最具体优先』自动排序；路径请同时覆盖正斜杠与反斜杠两种写法。",
+  "scrub_map": [
+    ["我的真名/身份", "{{SOVEREIGN}}"],
+    ["我的雇主名", "{{EMPLOYER}}"],
+    ["平行实例名A", "{{SIBLING_A}}"],
+    ["C:/Users/我的用户名/私人路径", "{{PRIVATE_PATH}}"],
+    ["C:\\Users\\我的用户名\\私人路径", "{{PRIVATE_PATH}}"]
+  ],
+  "raw_tokens": [
+    "我的真名/身份",
+    "我的雇主名",
+    "C:/Users/我的用户名"
+  ]
+}

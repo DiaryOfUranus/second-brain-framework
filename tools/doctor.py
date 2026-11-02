@@ -225,10 +225,16 @@ def check_skill_links(results):
 
 def check_scrub(results):
     try:
-        from scrub import check_tree
+        from scrub import ScrubConfigMissing, check_tree
     except Exception:
         return
-    hits = check_tree(REPO, exclude_dirs={"tools", ".git", ".build", "__pycache__"})
+    try:
+        hits = check_tree(REPO, exclude_dirs={"tools", ".git", ".build", "__pycache__"})
+    except ScrubConfigMissing:
+        # 公共仓正常态：未配置私人标识映射（tools/scrub_local.json 缺席），无可检项
+        results.append(("ok", "脱敏残留",
+                        "未配置私人标识映射（scrub_local.json 缺席·公共仓正常态），跳过"))
+        return
     if not hits:
         results.append(("ok", "脱敏残留", "未发现私人标识残留"))
     else:
@@ -236,7 +242,7 @@ def check_scrub(results):
         results.append(("yellow", "脱敏残留",
                         f"发现疑似私人标识：{toks}；"
                         f"跑 `python tools/assemble.py --check-only` 看明细，"
-                        f"并把新标识加入 tools/scrub.py 的 SCRUB_MAP 后重跑"))
+                        f"并把新标识加入 tools/scrub_local.json 后重跑"))
 
 
 def print_report(results, as_json, brain_root):
