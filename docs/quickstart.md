@@ -58,7 +58,7 @@ cp templates/base/骨架.md base/骨架.md   # 把 {{理论名}} 换成你自己
 ## 步骤 3：装上自动健康检查钩子
 
 ```bash
-cp meta/hooks/post-commit .git/hooks/post-commit
+cp meta/hooks/post-commit.sh .git/hooks/post-commit
 chmod +x .git/hooks/post-commit
 ```
 
