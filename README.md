@@ -57,7 +57,7 @@ cp templates/self-model.md self-model.md
 # ... (see docs/quickstart.md for the full 3-step onboarding)
 
 # 3. Install the post-commit hook (auto brain health check; never commits twice)
-cp meta/hooks/post-commit .git/hooks/post-commit
+cp meta/hooks/post-commit.sh .git/hooks/post-commit
 chmod +x .git/hooks/post-commit
 
 # 4. Run a brain health check
