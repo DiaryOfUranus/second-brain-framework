@@ -1,6 +1,6 @@
 # 实现说明与互鉴来源（implementation-notes）
 
-> ⚠️ **诚实边界**：本节记录框架在私有实例中的「工程落地件」与「外部互鉴来源」，供深度读者追溯。其中部分 `meta/*.py`（如 `declaration_gate` / `command_guard` / `session_extract` / `second_opinion` 等）为**私有脑资产**，本开源纯净包**仅随附** `meta/brain_check.py` `brain_commit.py` `brain_offline_drill.py` `export_second_brain.py` `upgrade_pack.py` 及 `meta/hooks/post-commit` 等可移植脚本。接入时**请以本仓库 `meta/` 实际文件为准**，不要假设下列所有脚本都已随包发布。
+> ⚠️ **诚实边界**：本节记录框架在私有实例中的「工程落地件」与「外部互鉴来源」，供深度读者追溯。其中部分 `meta/*.py`（如 `declaration_gate` / `command_guard` / `session_extract` / `second_opinion` 等）为**私有脑资产**，本开源纯净包**仅随附** `meta/brain_check.py` `brain_commit.py` `brain_offline_drill.py` `export_second_brain.py` `upgrade_pack.py` 及 `meta/hooks/post-commit.sh` 等可移植脚本。接入时**请以本仓库 `meta/` 实际文件为准**，不要假设下列所有脚本都已随包发布。
 
 ---
 
@@ -13,7 +13,7 @@
 - `meta/second_opinion.py` — 复核（trailofbits DNA）：结论产出前工程复核清单，输出意见不阻断。
 - `meta/selfmodel_watch.py` + `meta/update_self_model.py` + `meta/compress_mu.py` — 上下文 μ 压缩（headroom DNA）**常驻自动化**。
 - `meta/brain_commit.py` — 代谢后自动提交：任何代谢后把脑目录变更提交进 Git，无变更则跳过。**（本开源包已随附）**
-- `meta/code_map.py` + `meta/update_code_map.py` + `meta/hooks/post-commit-code-map` — 代码地图常驻 μ 视图。**（post-commit-code-map 思路同本包随附的 post-commit 钩子）**
+- `meta/code_map.py` + `meta/update_code_map.py` + `meta/hooks/post-commit-code-map` — 代码地图常驻 μ 视图。**（post-commit-code-map 思路同本包随附的 post-commit.sh 钩子）**
 - 脑目录已 `git init`：思考/台账/错题本进 Git，可 diff/回滚。
 - 上述「确定性工程」层即 v0 的 μ 哲学（opencode DNA）。
 
@@ -103,7 +103,7 @@
 | Git 完整性 | `.git` 是否丢失 | 给「一键重建配方」（不自动跑，需确认远程 URL） |
 | 远程连通性 | github.com:443 / api.github.com | 443 不可达时指出走 API 通道兜底 |
 | 脑状态文件 | index/ledger/VERSION 缺失 | `--fix` 从 `templates/` 生成 |
-| 健康检查钩子 | `.git/hooks/post-commit` 就位 | `--fix` 自动装 `meta/hooks/post-commit` |
+| 健康检查钩子 | `.git/hooks/post-commit` 就位 | `--fix` 自动装钩子（内容内嵌·不依赖随包文件） |
 | SKILL.md 引用 | references/docs 链接断裂 | 指出断裂处 |
 | 脱敏残留 | `scrub --check` | 给下一步命令 |
 

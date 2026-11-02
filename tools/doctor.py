@@ -55,7 +55,7 @@ MIN_PY = (3, 8)
 # 脑状态文件 → 对应模板（templates/ 下）
 BRAIN_STATE_FILES = ["index.md", "ledger.md", "VERSION.json"]
 
-# 健康检查钩子内容（内嵌，避免依赖包内 meta/hooks/post-commit 是否随包分发；
+# 健康检查钩子内容（内嵌，避免依赖包内 meta/hooks/post-commit.sh 是否随包分发；
 # 发布表单会剔除无扩展名/git hook 文件，故 --fix 直接写出此内容，对所有来源一致可用）
 HOOK_CONTENT = r"""#!/bin/sh
 # second-brain post-commit hook — 自动跑脑健康检查
