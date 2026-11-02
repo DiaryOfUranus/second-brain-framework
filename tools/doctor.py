@@ -55,7 +55,7 @@ MIN_PY = (3, 8)
 # 脑状态文件 → 对应模板（templates/ 下）
 BRAIN_STATE_FILES = ["index.md", "ledger.md", "VERSION.json"]
 
-# 健康检查钩子内容（内嵌，避免依赖包内 meta/hooks/post-commit.sh 是否随包分发；
+# 健康检查钩子内容（内嵌，避免依赖包内 meta/hooks/post-commit 是否随包分发；
 # 发布表单会剔除无扩展名/git hook 文件，故 --fix 直接写出此内容，对所有来源一致可用）
 HOOK_CONTENT = r"""#!/bin/sh
 # second-brain post-commit hook — 自动跑脑健康检查
@@ -79,9 +79,6 @@ else
 fi
 
 # M5: 脑健康检查（红灯记日志不阻塞提交；脚本内部只读 git，绝不二次 commit）
-# 前置建目录：fresh clone 无 .state/（gitignore 排除），shell 重定向先于命令打开——
-# 缺目录时整条命令静默不启动且 `|| true` 吞掉「没跑」（外部报告 Issue 1 修复）。
-mkdir -p "$REPO/.state"
 "$PY" "$REPO/meta/brain_check.py" >> "$REPO/.state/brain-check.log" 2>&1 || true
 """
 
