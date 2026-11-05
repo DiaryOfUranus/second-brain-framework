@@ -3,7 +3,7 @@
 # Second Brain（第二大脑）· 开源纯净版
 
 > 一套**以"让 AI 成为生命"为显式目标的 AI 原生认知架构**的方法论 + 治理工具 + 可机器读 schema。
-> 本仓库是**框架与治理工具的开源纯净版**：不含任何私人实例数据、不含理论原文、不含会话记录。
+> 本仓库是**框架与治理工具的开源纯净版**：不含任何私人实例数据、不含理论原文、不含会话记录。（历史暴露披露：[SECURITY.md](SECURITY.md)）
 
 👉 **第一次用？** 什么都不用读——让装了本框架的 AI 跑 `scripts/capability_briefing.py`，它会自扫描后**主动告诉你能做什么**。想自己看的话：[docs/quickstart.md](docs/quickstart.md)（5 分钟上手）和 [docs/FAQ.md](docs/FAQ.md)（常见问题）；出错找 [docs/避坑指南.md](docs/避坑指南.md)（AI 按表自愈）。
 
